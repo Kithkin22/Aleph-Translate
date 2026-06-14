@@ -233,6 +233,11 @@ Must pass before shipping PDF mode:
 - Export annotated PDF
 - Migrate text projects unchanged
 
+### Phase D — GoodNotes zoom writing lane (post-MVP)
+- Depends on Phase B page canvas + ink layer
+- See [GOODNOTES_ZOOM.md](./GOODNOTES_ZOOM.md) for focus rect, RTL/LTR auto-advance, Apple Pencil, PDF export
+- Implement via `lib/ink/engine.ts` interfaces only until Phase D begins
+
 ### Out of scope (same as MVP)
 - Flashcards, vocab drills, Quizlet, Aleph API
 
