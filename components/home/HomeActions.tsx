@@ -2,49 +2,40 @@ import Link from "next/link";
 
 const actions = [
   {
-    href: "/new",
-    title: "New Translation",
-    description: "Paste Hebrew or Greek text and begin translating verse by verse.",
-    icon: "✦",
-  },
-  {
-    href: "/archive",
-    title: "Open Saved Translation",
-    description: "Continue a project you already started.",
-    icon: "↩",
-  },
-  {
-    href: "/archive",
-    title: "Archive",
-    description: "Browse all saved translation projects.",
+    href: "/library",
+    title: "Library",
+    description: "Browse Hebrew, Greek, and custom folders with notebooks and chapters.",
     icon: "▤",
+  },
+  {
+    href: "/library",
+    title: "New Chapter",
+    description: "Open a notebook and tap Add Chapter to paste new text.",
+    icon: "✦",
   },
 ] as const;
 
 interface HomeActionsProps {
-  lastOpenedId?: string | null;
-  lastOpenedTitle?: string | null;
+  continueHref?: string | null;
+  continueLabel?: string | null;
 }
 
-export function HomeActions({
-  lastOpenedId,
-  lastOpenedTitle,
-}: HomeActionsProps) {
+export function HomeActions({ continueHref, continueLabel }: HomeActionsProps) {
   return (
     <div className="flex flex-col gap-4">
-      {lastOpenedId && lastOpenedTitle ? (
+      {continueHref && continueLabel ? (
         <Link
-          href={`/workspace/${lastOpenedId}`}
+          href={continueHref}
           className="rounded-2xl border border-amber-300/60 bg-amber-50 p-5 transition-colors hover:bg-amber-100/80 dark:border-amber-700/50 dark:bg-amber-950/40 dark:hover:bg-amber-950/60"
         >
           <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
             Continue where you left off
           </p>
-          <p className="mt-1 truncate text-lg font-semibold">{lastOpenedTitle}</p>
+          <p className="mt-1 truncate text-lg font-semibold">{continueLabel}</p>
         </Link>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-1">
+      <div className="grid gap-4">
         {actions.map((action) => (
           <Link
             key={action.title}

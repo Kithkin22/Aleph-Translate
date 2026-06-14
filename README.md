@@ -2,14 +2,37 @@
 
 iPad/Safari-first translation workspace for Hebrew and Greek reading practice.
 
+**Version 1.0** — Library-organized notebooks with local autosave.
+
 Built with Next.js, TypeScript, and Tailwind CSS. Deploy-ready on Vercel.
 
-## Features (MVP)
+## Features
 
-- **Home** — New Translation, Open Saved, Archive
-- **New Translation** — Paste text, clean formatting, Logos-style verse splitting
-- **Workspace** — Verse-by-verse translation and notes with local autosave
-- **Archive** — Reopen or delete saved projects
+### Library (core model)
+
+```
+Hebrew/
+  Job/
+    Job 1, Job 2, Job 3
+Greek/
+  John/
+    John 1, John 2
+```
+
+- Default **Hebrew** and **Greek** folders (names editable)
+- **Notebooks** per book — empty notebooks allowed
+- **Drag to reorder** notebooks within a folder
+- **Pages/chapters** with completion status
+- **Continue** where you left off
+- **Chapter navigation** in the workspace
+
+### Translation workspace
+
+- Paste Logos Fully Formatted text — automatic verse splitting
+- Verse-by-verse translation and notes
+- Hebrew/Greek auto-detection
+- Debounced autosave to browser storage
+- Legacy MVP projects migrate automatically on first load
 
 ## Getting started
 
@@ -28,17 +51,12 @@ Push to GitHub and import the repository in Vercel, or:
 npx vercel
 ```
 
-## Paste format
+## Roadmap (post-1.0)
 
-Aleph handles Logos **Fully Formatted** copy output, including:
-
-- Passage headers/footers (e.g. `Genesis 1:1–3 (BHS)`)
-- `chapter:verse` prefixes (`1:1 …`)
-- Verse numbers at line starts (`1 …`, `[1] …`)
-- Wrapped continuation lines and inline verse boundaries
-
-Hebrew vs Greek is detected automatically from the pasted characters.
+- PDF annotator pages — see `PDF_ANNOTATOR.md`
+- GoodNotes-style zoom writing lane — see `GOODNOTES_ZOOM.md`
+- Aleph API integration
 
 ## Storage
 
-All projects are saved in the browser via `localStorage`. No account or server required for MVP.
+All library metadata and page content save in the browser via `localStorage`. No account or server required.

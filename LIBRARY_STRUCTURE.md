@@ -1,7 +1,6 @@
 # Library Structure — Core Organizational Model
 
-> **Status:** Approved direction — replaces flat “Archive” as the primary mental model.  
-> **MVP today:** Flat projects in Archive map 1:1 to **Pages** during migration.  
+> **Status:** Shipped in v1.0 (`cursor/v1-library-2f95`).  
 > **Future:** Handwritten pages, PDF pages, GoodNotes zoom lane — all live inside **Pages**.
 
 ---

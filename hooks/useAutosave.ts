@@ -1,26 +1,27 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { saveProjectSafe } from "@/lib/storage/projects";
-import type { SaveStatus, TranslationProject } from "@/lib/types/project";
+import { savePageSafe } from "@/lib/library/storage";
+import type { Page } from "@/lib/library/types";
+import type { SaveStatus } from "@/lib/types/project";
 
 const DEBOUNCE_MS = 400;
 
-export function useAutosave(project: TranslationProject | null) {
+export function useAutosave(page: Page | null) {
   const [status, setStatus] = useState<SaveStatus>("idle");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const projectRef = useRef<TranslationProject | null>(project);
+  const pageRef = useRef<Page | null>(page);
 
   useEffect(() => {
-    projectRef.current = project;
-  }, [project]);
+    pageRef.current = page;
+  }, [page]);
 
   const flush = useCallback(() => {
-    const current = projectRef.current;
+    const current = pageRef.current;
     if (!current) return;
     setStatus("saving");
     try {
-      saveProjectSafe(current);
+      savePageSafe(current);
       setStatus("saved");
     } catch {
       setStatus("error");
@@ -28,9 +29,9 @@ export function useAutosave(project: TranslationProject | null) {
   }, []);
 
   const scheduleSave = useCallback(
-    (next?: TranslationProject) => {
-      if (next) projectRef.current = next;
-      if (!projectRef.current) return;
+    (next?: Page) => {
+      if (next) pageRef.current = next;
+      if (!pageRef.current) return;
       setStatus("saving");
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(flush, DEBOUNCE_MS);
