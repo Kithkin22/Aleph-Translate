@@ -31,6 +31,7 @@ export function notifyStorageChange(): void {
 }
 
 export function subscribeStorage(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
   window.addEventListener(STORAGE_EVENT, callback);
   return () => window.removeEventListener(STORAGE_EVENT, callback);
 }
@@ -46,7 +47,17 @@ function readJson<T>(key: string, fallback: T): T {
 }
 
 function writeJson(key: string, value: unknown): void {
-  localStorage.setItem(key, JSON.stringify(value));
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    if (
+      error instanceof DOMException &&
+      (error.name === "QuotaExceededError" || error.code === 22)
+    ) {
+      throw new StorageQuotaError();
+    }
+    throw error;
+  }
 }
 
 function now(): string {
@@ -54,7 +65,10 @@ function now(): string {
 }
 
 function newId(): string {
-  return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `id-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
 function readLibraryRoot(): Library | null {
@@ -124,67 +138,80 @@ function folderForLanguage(
 }
 
 function migrateLegacyProjects(): void {
-  if (localStorage.getItem(MIGRATION_V1_KEY)) return;
+  try {
+    if (localStorage.getItem(MIGRATION_V1_KEY)) return;
 
-  const legacyIndex = readJson<ProjectIndexEntry[]>(PROJECTS_INDEX_KEY, []);
-  if (legacyIndex.length === 0) {
-    localStorage.setItem(MIGRATION_V1_KEY, "1");
-    return;
-  }
-
-  const library = readLibraryRoot()!;
-  let notebooks = readNotebooks();
-  const folders = library.folders;
-
-  for (const entry of legacyIndex) {
-    const raw = localStorage.getItem(projectKey(entry.id));
-    if (!raw) continue;
-    const project = JSON.parse(raw) as TranslationProject;
-
-    const folder = folderForLanguage(folders, project.sourceLanguage);
-    let notebook = notebooks.find(
-      (n) => n.folderId === folder.id && n.name === "Imported",
-    );
-    if (!notebook) {
-      const ts = now();
-      notebook = {
-        id: newId(),
-        folderId: folder.id,
-        name: "Imported",
-        sortOrder: notebooks.filter((n) => n.folderId === folder.id).length,
-        createdAt: ts,
-        updatedAt: ts,
-      };
-      notebooks = [...notebooks, notebook];
+    const legacyIndex = readJson<ProjectIndexEntry[]>(PROJECTS_INDEX_KEY, []);
+    if (legacyIndex.length === 0) {
+      localStorage.setItem(MIGRATION_V1_KEY, "1");
+      return;
     }
 
-    const pageCount = readPagesIndex().filter(
-      (p) => p.notebookId === notebook!.id,
-    ).length;
-    const ts = project.updatedAt || now();
-    const page: Page = {
-      id: project.id,
-      notebookId: notebook.id,
-      folderId: folder.id,
-      name: project.title,
-      sortOrder: pageCount,
-      contentKind: "text",
-      sourceLanguage: project.sourceLanguage,
-      createdAt: project.createdAt,
-      updatedAt: ts,
-      title: project.title,
-      verses: project.verses,
-      passageRef: project.passageRef,
-      completion: computePageCompletion({ verses: project.verses }),
-    };
+    const library = readLibraryRoot();
+    if (!library) return;
 
-    writeJson(pageKey(page.id), page);
-    upsertPageIndex(page);
+    let notebooks = readNotebooks();
+    const folders = library.folders;
+
+    for (const entry of legacyIndex) {
+      const raw = localStorage.getItem(projectKey(entry.id));
+      if (!raw) continue;
+      let project: TranslationProject;
+      try {
+        project = JSON.parse(raw) as TranslationProject;
+      } catch {
+        continue;
+      }
+
+      const folder = folderForLanguage(folders, project.sourceLanguage);
+      if (!folder) continue;
+
+      let notebook = notebooks.find(
+        (n) => n.folderId === folder.id && n.name === "Imported",
+      );
+      if (!notebook) {
+        const ts = now();
+        notebook = {
+          id: newId(),
+          folderId: folder.id,
+          name: "Imported",
+          sortOrder: notebooks.filter((n) => n.folderId === folder.id).length,
+          createdAt: ts,
+          updatedAt: ts,
+        };
+        notebooks = [...notebooks, notebook];
+      }
+
+      const pageCount = readPagesIndex().filter(
+        (p) => p.notebookId === notebook!.id,
+      ).length;
+      const ts = project.updatedAt || now();
+      const page: Page = {
+        id: project.id,
+        notebookId: notebook.id,
+        folderId: folder.id,
+        name: project.title,
+        sortOrder: pageCount,
+        contentKind: "text",
+        sourceLanguage: project.sourceLanguage,
+        createdAt: project.createdAt,
+        updatedAt: ts,
+        title: project.title,
+        verses: project.verses,
+        passageRef: project.passageRef,
+        completion: computePageCompletion({ verses: project.verses }),
+      };
+
+      writeJson(pageKey(page.id), page);
+      upsertPageIndex(page);
+    }
+
+    writeNotebooks(notebooks);
+    localStorage.setItem(MIGRATION_V1_KEY, "1");
+    notifyStorageChange();
+  } catch {
+    localStorage.setItem(MIGRATION_V1_KEY, "1");
   }
-
-  writeNotebooks(notebooks);
-  localStorage.setItem(MIGRATION_V1_KEY, "1");
-  notifyStorageChange();
 }
 
 export function ensureLibrary(): Library {

@@ -1,26 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
-import { useSyncExternalStore } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { EditableName } from "@/components/library/EditableName";
+import { useLibraryFolders } from "@/hooks/useLibraryFolders";
 import {
   createFolder,
-  ensureLibrary,
-  listFolders,
   listNotebooks,
   notebookPageCount,
   renameFolder,
-  subscribeStorage,
 } from "@/lib/library/storage";
 
 export default function LibraryPage() {
-  useEffect(() => {
-    ensureLibrary();
-  }, []);
+  const { folders, ready } = useLibraryFolders();
 
-  const folders = useSyncExternalStore(subscribeStorage, listFolders, () => []);
+  if (!ready) {
+    return (
+      <AppShell title="Library">
+        <p className="text-stone-500">Loading library…</p>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title="Library">
@@ -28,6 +28,12 @@ export default function LibraryPage() {
         Folders contain notebooks; notebooks contain chapter pages. Everything
         autosaves locally.
       </p>
+      {folders.length === 0 ? (
+        <p className="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          No folders yet — Hebrew and Greek should appear automatically. Try
+          refreshing, or add a folder below.
+        </p>
+      ) : null}
       <ul className="flex flex-col gap-3">
         {folders.map((folder) => {
           const notebookCount = listNotebooks(folder.id).length;
@@ -49,7 +55,8 @@ export default function LibraryPage() {
                     ariaLabel="Folder name"
                   />
                   <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-                    {notebookCount} {notebookCount === 1 ? "notebook" : "notebooks"} ·{" "}
+                    {notebookCount}{" "}
+                    {notebookCount === 1 ? "notebook" : "notebooks"} ·{" "}
                     {pageCount} {pageCount === 1 ? "page" : "pages"}
                   </p>
                 </div>
@@ -58,7 +65,15 @@ export default function LibraryPage() {
                   className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800"
                   aria-label={`Open ${folder.name}`}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden
+                  >
                     <path d="M9 18l6-6-6-6" />
                   </svg>
                 </Link>
