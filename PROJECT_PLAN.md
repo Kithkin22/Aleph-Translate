@@ -1,6 +1,6 @@
 # Aleph Translate — Project Plan (MVP)
 
-> **Status:** Planning — awaiting approval before implementation.
+> **Status:** Approved — MVP implemented on `cursor/initial-mvp-2f95`.
 
 ## Overview
 
@@ -349,15 +349,15 @@ After approval, implementation order:
 
 ---
 
-## Open Questions for Approval
+## Decisions (approved)
 
-1. **Title editing:** Inline editable project title in workspace, or auto-title from first verse only?
-2. **Delete confirmation:** Simple browser `confirm()` for MVP, or custom modal?
-3. **Hebrew/Greek detection:** Auto-detect for `sourceLanguage`, or user picker on New Translation?
-4. **Verse splitting:** Line-based only for MVP — is that acceptable, or should blank-line paragraphs be supported?
+1. **Title editing:** Inline editable project title in the workspace toolbar area.
+2. **Delete confirmation:** Browser `confirm()` dialog.
+3. **Language detection:** Auto-detect Hebrew vs Greek from pasted characters.
+4. **Verse splitting:** Logos Fully Formatted-style parsing — passage headers/footers, `chapter:verse` prefixes, verse numbers, bracketed markers, wrapped lines, and inline verse boundaries.
 
 ---
 
-## Approval
+## Open Questions for Approval
 
-Please review this plan. Once approved, implementation will begin on branch `cursor/initial-mvp-2f95` with no Aleph integration and no out-of-scope features.
+_Resolved — see Decisions above._
