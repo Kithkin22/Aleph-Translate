@@ -29,6 +29,8 @@ export interface LibraryStore {
   getNotebook(id: NotebookId): NotebookMeta | null;
   createNotebook(folderId: FolderId, name: string): NotebookMeta;
   renameNotebook(id: NotebookId, name: string): NotebookMeta;
+  /** Drag-and-drop reorder within a folder; rewrites sortOrder on each NotebookMeta. */
+  reorderNotebooks(folderId: FolderId, orderedIds: NotebookId[]): void;
 
   listPages(notebookId: NotebookId): PageIndexEntry[];
   getPage(id: PageId): Page | null;

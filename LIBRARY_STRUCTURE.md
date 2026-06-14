@@ -162,6 +162,8 @@ const DEFAULT_FOLDERS = [
 
 No notebooks or pages until the user creates them or migrates MVP projects.
 
+**Empty notebooks are allowed** — users can create placeholder notebooks (e.g. “Philippians” before the semester starts) with zero pages.
+
 ---
 
 ## Navigation & routes (target)
@@ -169,7 +171,7 @@ No notebooks or pages until the user creates them or migrates MVP projects.
 | Route | Screen |
 |-------|--------|
 | `/library` | Folder list (Hebrew, Greek, + custom) |
-| `/library/[folderId]` | Notebooks in folder |
+| `/library/[folderId]` | Notebooks in folder (**drag to reorder**) |
 | `/library/[folderId]/[notebookId]` | Pages/chapters with completion badges |
 | `/library/.../[pageId]` | Workspace (text / PDF / ink) |
 
@@ -242,6 +244,7 @@ interface LibraryStore {
   listNotebooks(folderId: FolderId): NotebookMeta[];
   createNotebook(folderId: FolderId, name: string): NotebookMeta;
   renameNotebook(id: NotebookId, name: string): void;
+  reorderNotebooks(folderId: FolderId, orderedIds: NotebookId[]): void;
 
   listPages(notebookId: NotebookId): PageIndexEntry[];
   getPage(id: PageId): Page | null;
@@ -277,6 +280,15 @@ Current MVP `lib/storage/projects.ts` functions map to:
 
 Archive becomes **Library**; “Open Saved Translation” opens last notebook or folder picker.
 
+### Folder notebook list
+
+- Notebook name (editable)
+- Page count (may be **0** — empty notebooks allowed)
+- **Drag handle** to reorder notebooks within the folder (touch-friendly, iPad-first)
+- Tap to open notebook page list
+
+Uses `@dnd-kit/core` or native drag events; on drop, call `reorderNotebooks(folderId, orderedIds)` and autosave `sortOrder`.
+
 ### Notebook page list
 
 Each row:
@@ -304,7 +316,7 @@ Each row:
 | Phase | Deliverable |
 |-------|-------------|
 | **L0** | Types + `LibraryStore` interface + this doc (current) |
-| **L1** | Seed Hebrew/Greek folders; library routes; page CRUD |
+| **L1** | Seed Hebrew/Greek folders; library routes; page CRUD; **notebook drag-reorder** |
 | **L2** | Migrate MVP projects; replace Archive with Library UI |
 | **L3** | Completion badges + chapter quick-nav + last location |
 | **L4** | PDF pages in notebooks |
@@ -320,9 +332,13 @@ Each row:
 
 ---
 
+## Approved decisions
+
+1. **Empty notebooks:** Allowed — placeholders with zero pages are fine.
+2. **Notebook reorder:** Drag-and-drop within a folder in **L1** (iPad-friendly drag handles).
+3. **Folder / page reorder:** Not in L1; pages may get reorder in L3 with chapter nav work.
+
 ## Open decisions
 
-1. Allow **empty notebooks** (placeholders for semester planning)?
-2. **Reorder** folders/notebooks/pages via drag-and-drop in L1 or L3?
-3. **Duplicate page** (copy chapter to new page)?
-4. **Complete** manually overridable, or strictly verse-fill algorithm?
+1. **Duplicate page** (copy chapter to new page)?
+2. **Complete** manually overridable, or strictly verse-fill algorithm?
