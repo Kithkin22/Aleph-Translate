@@ -1,40 +1,14 @@
-# Aleph Translate
+# Shift Swap
 
-iPad/Safari-first translation workspace for Hebrew and Greek reading practice.
-
-**Version 1.0** — Library-organized notebooks with local autosave.
-
-Built with Next.js, TypeScript, and Tailwind CSS. Deploy-ready on Vercel.
-
-**Live app:** [https://aleph-translate.vercel.app](https://aleph-translate.vercel.app)
+A lightweight shift swap MVP built with Next.js, TypeScript, and Tailwind CSS. The app uses local mock data only — no backend, database, or authentication required.
 
 ## Features
 
-### Library (core model)
-
-```
-Hebrew/
-  Job/
-    Job 1, Job 2, Job 3
-Greek/
-  John/
-    John 1, John 2
-```
-
-- Default **Hebrew** and **Greek** folders (names editable)
-- **Notebooks** per book — empty notebooks allowed
-- **Drag to reorder** notebooks within a folder
-- **Pages/chapters** with completion status
-- **Continue** where you left off
-- **Chapter navigation** in the workspace
-
-### Translation workspace
-
-- Paste Logos Fully Formatted text — automatic verse splitting
-- Verse-by-verse translation and notes
-- Hebrew/Greek auto-detection
-- Debounced autosave to browser storage
-- Legacy MVP projects migrate automatically on first load
+- Dashboard with upcoming shifts and pending swap activity
+- My Shifts page to offer your shifts for swap
+- Swap board to browse open coworker shifts and send requests
+- Accept, decline, or cancel swap requests in the browser
+- In-memory mock store that resets on page refresh
 
 ## Getting started
 
@@ -45,20 +19,21 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+## Mock user
 
-Push to GitHub and import the repository in Vercel, or:
+The app signs you in as **Alex Rivera** (`emp-alex`) using seeded mock employees, shifts, and swap requests in `lib/mock/data.ts`.
 
-```bash
-npx vercel
-```
+## Routes
 
-## Roadmap (post-1.0)
+| Route | Purpose |
+|-------|---------|
+| `/` | Dashboard overview |
+| `/my-shifts` | View and offer your shifts |
+| `/swaps` | Browse open swaps and manage requests |
 
-- PDF annotator pages — see `PDF_ANNOTATOR.md`
-- GoodNotes-style zoom writing lane — see `GOODNOTES_ZOOM.md`
-- Aleph API integration
+## Tech stack
 
-## Storage
-
-All library metadata and page content save in the browser via `localStorage`. No account or server required.
+- Next.js App Router
+- TypeScript
+- Tailwind CSS v4
+- React client state via `SwapStoreProvider`
