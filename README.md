@@ -6,6 +6,8 @@ iPad/Safari-first translation workspace for Hebrew and Greek reading practice.
 
 Built with Next.js, TypeScript, and Tailwind CSS. Deploy-ready on Vercel.
 
+**Live app:** [https://aleph-translate.vercel.app](https://aleph-translate.vercel.app)
+
 ## Features
 
 ### Library (core model)
