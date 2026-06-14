@@ -14,6 +14,8 @@ Aleph Translate is an iPad/Safari-first web application for translating Hebrew a
 
 **Post-MVP ink:** GoodNotes-style zoom writing lane — see [GOODNOTES_ZOOM.md](./GOODNOTES_ZOOM.md).
 
+**Core organizational model:** Folder → Notebook → Page library — see [LIBRARY_STRUCTURE.md](./LIBRARY_STRUCTURE.md).
+
 ---
 
 ## Architecture

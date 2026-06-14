@@ -1,7 +1,7 @@
 # GoodNotes-Style Zoom Writing Window — Future Feature
 
 > **Status:** Post-MVP — not implemented. Architecture hooks only.  
-> **Depends on:** [PDF Annotator workspace](./PDF_ANNOTATOR.md) (PDF project mode + ink layer).  
+> **Depends on:** [PDF Annotator workspace](./PDF_ANNOTATOR.md) (PDF pages + ink layer) inside [Library Pages](./LIBRARY_STRUCTURE.md).  
 > **Target platform:** iPad Safari with Apple Pencil.
 
 ---

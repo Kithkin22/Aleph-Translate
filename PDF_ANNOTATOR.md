@@ -1,7 +1,7 @@
 # PDF Annotator Workspace — Design Proposal
 
 > **Status:** Proposal — not yet implemented.  
-> **Context:** Evaluate replacing or augmenting the current textarea-based translation workspace with an embedded PDF annotator.
+> **Context:** PDF pages live inside the [Library](./LIBRARY_STRUCTURE.md) (Folder → Notebook → Page). Augments textarea translation on PDF-backed pages.
 
 ---
 
@@ -19,7 +19,7 @@ A plain textarea per verse does not preserve **document layout**, **visual conte
 
 ## Recommendation
 
-**Do not replace the text workspace.** Add a second project mode: **PDF Document Workspace**.
+**Do not replace the text workspace or library hierarchy.** Add `contentKind: "pdf"` on **Pages** inside notebooks:
 
 | Mode | Best for | Input |
 |------|----------|-------|

@@ -3,8 +3,8 @@ export type ProjectId = string;
 export type SourceLanguage = "hebrew" | "greek" | "unknown";
 
 /**
- * Text-mode project (MVP). PDF and ink layers are future kinds —
- * @see PDF_ANNOTATOR.md, GOODNOTES_ZOOM.md, lib/ink/
+ * Text-mode project (MVP). Maps 1:1 to a library Page after migration —
+ * @see LIBRARY_STRUCTURE.md, PDF_ANNOTATOR.md, GOODNOTES_ZOOM.md, lib/ink/
  */
 
 export interface Verse {
