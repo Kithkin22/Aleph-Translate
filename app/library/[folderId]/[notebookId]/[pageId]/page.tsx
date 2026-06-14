@@ -4,13 +4,14 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ChapterNav } from "@/components/library/ChapterNav";
+import { PageOrganizer } from "@/components/library/PageOrganizer";
 import { VerseBlock } from "@/components/translation/VerseBlock";
 import { WorkspaceToolbar } from "@/components/translation/WorkspaceToolbar";
 import { useAutosave } from "@/hooks/useAutosave";
 import { usePage } from "@/hooks/usePage";
 import { computePageCompletion } from "@/lib/library/completion";
 import { useLibraryInit } from "@/hooks/useLibraryInit";
-import { getNotebook, setLastLocation } from "@/lib/library/storage";
+import { getNotebook, isPageInInbox, setLastLocation } from "@/lib/library/storage";
 import type { Page } from "@/lib/library/types";
 
 export default function PageWorkspace() {
@@ -46,6 +47,7 @@ export default function PageWorkspace() {
   }
 
   const notebook = page ? getNotebook(page.notebookId) : null;
+  const inInbox = page ? isPageInInbox(page) : false;
 
   if (loading || !page) {
     return (
@@ -61,7 +63,8 @@ export default function PageWorkspace() {
       backHref={`/library/${page.folderId}/${page.notebookId}`}
       trailing={<WorkspaceToolbar status={status} />}
     >
-      <ChapterNav page={page} />
+      <PageOrganizer page={page} />
+      {!inInbox ? <ChapterNav page={page} /> : null}
 
       <div className="mb-6 flex flex-col gap-3">
         <label className="flex flex-col gap-2">
@@ -78,7 +81,10 @@ export default function PageWorkspace() {
           />
         </label>
         <p className="text-sm text-stone-500 dark:text-stone-400">
-          {notebook?.name} · {page.verses.length}{" "}
+          {inInbox
+            ? "Inbox · quick start"
+            : `${notebook?.name ?? "Notebook"} ·`}{" "}
+          {page.verses.length}{" "}
           {page.verses.length === 1 ? "verse" : "verses"}
           {page.sourceLanguage !== "unknown" ? ` · ${page.sourceLanguage}` : ""}
           {page.passageRef ? ` · ${page.passageRef}` : ""}

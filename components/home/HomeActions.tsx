@@ -2,16 +2,18 @@ import Link from "next/link";
 
 const actions = [
   {
-    href: "/library",
-    title: "Library",
-    description: "Browse Hebrew, Greek, and custom folders with notebooks and chapters.",
-    icon: "▤",
+    href: "/quick-start",
+    title: "New Chapter",
+    description: "Paste text and start now — assign folder and notebook later.",
+    icon: "✦",
+    primary: true,
   },
   {
     href: "/library",
-    title: "New Chapter",
-    description: "Open a notebook and tap Add Chapter to paste new text.",
-    icon: "✦",
+    title: "Library",
+    description: "Browse Hebrew, Greek, Inbox, and custom folders.",
+    icon: "▤",
+    primary: false,
   },
 ] as const;
 
@@ -40,9 +42,19 @@ export function HomeActions({ continueHref, continueLabel }: HomeActionsProps) {
           <Link
             key={action.title}
             href={action.href}
-            className="group flex min-h-[88px] items-start gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition-all active:scale-[0.99] hover:border-stone-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700"
+            className={`group flex min-h-[88px] items-start gap-4 rounded-2xl border p-5 shadow-sm transition-all active:scale-[0.99] ${
+              action.primary
+                ? "border-amber-300/60 bg-amber-50/50 hover:border-amber-400 hover:shadow-md dark:border-amber-700/40 dark:bg-amber-950/20 dark:hover:border-amber-600"
+                : "border-stone-200 bg-white hover:border-stone-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700"
+            }`}
           >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-lg dark:bg-stone-800">
+            <span
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg ${
+                action.primary
+                  ? "bg-amber-100 dark:bg-amber-900/50"
+                  : "bg-stone-100 dark:bg-stone-800"
+              }`}
+            >
               {action.icon}
             </span>
             <span>

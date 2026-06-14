@@ -33,6 +33,8 @@ export interface FolderMeta {
   name: string;
   sortOrder: number;
   isDefault?: boolean;
+  /** System folder for quick-start chapters awaiting filing */
+  isInbox?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -79,7 +81,11 @@ export interface Page extends PageIndexEntry {
 export interface Library {
   version: 1;
   folders: FolderMeta[];
+  inbox?: { folderId: FolderId; notebookId: NotebookId };
   lastLocation?: LibraryLocation;
 }
+
+export const INBOX_FOLDER_NAME = "Inbox";
+export const INBOX_NOTEBOOK_NAME = "Quick Start";
 
 export const DEFAULT_FOLDER_NAMES = ["Hebrew", "Greek"] as const;

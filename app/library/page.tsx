@@ -55,9 +55,9 @@ export default function LibraryPage() {
                     ariaLabel="Folder name"
                   />
                   <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-                    {notebookCount}{" "}
-                    {notebookCount === 1 ? "notebook" : "notebooks"} ·{" "}
-                    {pageCount} {pageCount === 1 ? "page" : "pages"}
+                    {folder.isInbox
+                      ? "Quick-start chapters — file into Hebrew, Greek, or custom folders when ready"
+                      : `${notebookCount} ${notebookCount === 1 ? "notebook" : "notebooks"} · ${pageCount} ${pageCount === 1 ? "page" : "pages"}`}
                   </p>
                 </div>
                 <Link

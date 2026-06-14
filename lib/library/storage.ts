@@ -19,7 +19,11 @@ import type {
   PageId,
   PageIndexEntry,
 } from "@/lib/library/types";
-import { DEFAULT_FOLDER_NAMES } from "@/lib/library/types";
+import {
+  DEFAULT_FOLDER_NAMES,
+  INBOX_FOLDER_NAME,
+  INBOX_NOTEBOOK_NAME,
+} from "@/lib/library/types";
 import type { ProjectIndexEntry, TranslationProject } from "@/lib/types/project";
 
 const STORAGE_EVENT = "aleph-storage-change";
@@ -228,7 +232,59 @@ export function ensureLibrary(): Library {
   }
 
   migrateLegacyProjects();
+  ensureInbox();
   return readLibraryRoot()!;
+}
+
+function ensureInbox(): { folderId: FolderId; notebookId: NotebookId } {
+  const library = readLibraryRoot()!;
+  if (library.inbox) {
+    const folder = library.folders.find((f) => f.id === library.inbox!.folderId);
+    const notebook = readNotebooks().find((n) => n.id === library.inbox!.notebookId);
+    if (folder?.isInbox && notebook) return library.inbox;
+  }
+
+  const ts = now();
+  const inboxFolder: FolderMeta = {
+    id: newId(),
+    name: INBOX_FOLDER_NAME,
+    sortOrder: -1,
+    isInbox: true,
+    createdAt: ts,
+    updatedAt: ts,
+  };
+  library.folders.push(inboxFolder);
+
+  const inboxNotebook: NotebookMeta = {
+    id: newId(),
+    folderId: inboxFolder.id,
+    name: INBOX_NOTEBOOK_NAME,
+    sortOrder: 0,
+    createdAt: ts,
+    updatedAt: ts,
+  };
+  writeNotebooks([...readNotebooks(), inboxNotebook]);
+
+  library.inbox = { folderId: inboxFolder.id, notebookId: inboxNotebook.id };
+  writeLibraryRoot(library);
+  return library.inbox;
+}
+
+export function getInbox(): { folderId: FolderId; notebookId: NotebookId } {
+  return ensureInbox();
+}
+
+export function isInboxFolder(folderId: FolderId): boolean {
+  const folder = ensureLibrary().folders.find((f) => f.id === folderId);
+  return folder?.isInbox === true;
+}
+
+export function isPageInInbox(page: Pick<Page, "folderId">): boolean {
+  return isInboxFolder(page.folderId);
+}
+
+export function listFilingFolders(): FolderMeta[] {
+  return listFolders().filter((f) => !f.isInbox);
 }
 
 export function getLibrary(): Library {
@@ -236,7 +292,11 @@ export function getLibrary(): Library {
 }
 
 export function listFolders(): FolderMeta[] {
-  return [...ensureLibrary().folders].sort((a, b) => a.sortOrder - b.sortOrder);
+  return [...ensureLibrary().folders].sort((a, b) => {
+    if (a.isInbox && !b.isInbox) return -1;
+    if (!a.isInbox && b.isInbox) return 1;
+    return a.sortOrder - b.sortOrder;
+  });
 }
 
 export function getFolder(id: FolderId): FolderMeta | null {
@@ -439,6 +499,47 @@ export function createPage(input: CreatePageInput): Page {
   };
   savePage(page);
   return page;
+}
+
+export interface QuickStartInput {
+  name?: string;
+  title: string;
+  sourceLanguage: Page["sourceLanguage"];
+  verses: Page["verses"];
+  passageRef?: string;
+}
+
+/** Create a chapter in the Inbox — file into a folder/notebook later. */
+export function createQuickStartPage(input: QuickStartInput): Page {
+  const inbox = getInbox();
+  return createPage({
+    folderId: inbox.folderId,
+    notebookId: inbox.notebookId,
+    name: input.name?.trim() || input.title,
+    title: input.title,
+    sourceLanguage: input.sourceLanguage,
+    verses: input.verses,
+    passageRef: input.passageRef,
+  });
+}
+
+export function movePageToNotebook(
+  pageId: PageId,
+  folderId: FolderId,
+  notebookId: NotebookId,
+): Page {
+  const page = getPage(pageId);
+  if (!page) throw new Error("Page not found");
+  if (isInboxFolder(folderId)) throw new Error("Choose a library folder, not Inbox");
+
+  const moved: Page = {
+    ...page,
+    folderId,
+    notebookId,
+    sortOrder: listPages(notebookId).length,
+  };
+  savePage(moved);
+  return moved;
 }
 
 export function notebookPageCount(notebookId: NotebookId): number {
