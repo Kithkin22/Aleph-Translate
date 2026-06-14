@@ -10,6 +10,8 @@ Aleph Translate is an iPad/Safari-first web application for translating Hebrew a
 
 **Explicitly out of scope for MVP:** flashcards, vocabulary study, parsing drills, Quizlet export, Aleph API integration.
 
+**Next proposed enhancement:** Embedded PDF annotator workspace — see [PDF_ANNOTATOR.md](./PDF_ANNOTATOR.md).
+
 ---
 
 ## Architecture
