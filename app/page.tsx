@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { HomeActions } from "@/components/home/HomeActions";
+import { NewMenu } from "@/components/library/NewMenu";
 import {
   ensureLibrary,
   getLastLocation,
@@ -51,24 +52,24 @@ export default function HomePage() {
 
   if (!ready) {
     return (
-      <AppShell>
+      <AppShell showBack={false}>
         <p className="text-stone-500">Loading…</p>
       </AppShell>
     );
   }
 
   return (
-    <AppShell>
-      <div className="mb-8">
-        <p className="text-sm font-medium uppercase tracking-wider text-amber-700 dark:text-amber-400">
-          Aleph Translate 1.0
-        </p>
-        <h2 className="mt-2 text-3xl font-semibold tracking-tight">
-          Read. Translate. Notes.
+    <AppShell showBack={false} trailing={<NewMenu context="library" />}>
+      <div className="mb-10 pt-4 text-center">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-stone-900 text-3xl font-serif text-white dark:bg-stone-100 dark:text-stone-900">
+          א
+        </div>
+        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          Annotate. Translate.
         </h2>
-        <p className="mt-3 max-w-xl text-base leading-relaxed text-stone-600 dark:text-stone-400">
-          Organize annotated PDFs in folders and notebooks. Everything autosaves
-          locally on your iPad or desktop.
+        <p className="mx-auto mt-3 max-w-sm text-base leading-relaxed text-stone-500 dark:text-stone-400">
+          Import PDFs, organize in folders, and work with Apple Pencil — saved
+          locally on your device.
         </p>
       </div>
       <HomeActions

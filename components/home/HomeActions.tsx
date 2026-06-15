@@ -1,21 +1,5 @@
 import Link from "next/link";
-
-const actions = [
-  {
-    href: "/quick-start",
-    title: "New Chapter",
-    description: "Paste text and start now — assign folder and notebook later.",
-    icon: "✦",
-    primary: true,
-  },
-  {
-    href: "/library",
-    title: "Library",
-    description: "Browse folders and notebooks — organize annotated PDFs.",
-    icon: "▤",
-    primary: false,
-  },
-] as const;
+import { GoodNotesFolderIcon } from "@/components/library/GoodNotesFolderIcon";
 
 interface HomeActionsProps {
   continueHref?: string | null;
@@ -24,48 +8,37 @@ interface HomeActionsProps {
 
 export function HomeActions({ continueHref, continueLabel }: HomeActionsProps) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {continueHref && continueLabel ? (
         <Link
           href={continueHref}
-          className="rounded-2xl border border-amber-300/60 bg-amber-50 p-5 transition-colors hover:bg-amber-100/80 dark:border-amber-700/50 dark:bg-amber-950/40 dark:hover:bg-amber-950/60"
+          className="group rounded-2xl border border-sky-200 bg-white p-5 shadow-sm transition active:scale-[0.99] hover:border-sky-300 hover:shadow-md dark:border-sky-800 dark:bg-stone-900 dark:hover:border-sky-700"
         >
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-            Continue where you left off
+          <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+            Continue
           </p>
-          <p className="mt-1 truncate text-lg font-semibold">{continueLabel}</p>
+          <p className="mt-1 truncate text-xl font-semibold">{continueLabel}</p>
+          <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
+            Pick up where you left off →
+          </p>
         </Link>
       ) : null}
 
-      <div className="grid gap-4">
-        {actions.map((action) => (
-          <Link
-            key={action.title}
-            href={action.href}
-            className={`group flex min-h-[88px] items-start gap-4 rounded-2xl border p-5 shadow-sm transition-all active:scale-[0.99] ${
-              action.primary
-                ? "border-amber-300/60 bg-amber-50/50 hover:border-amber-400 hover:shadow-md dark:border-amber-700/40 dark:bg-amber-950/20 dark:hover:border-amber-600"
-                : "border-stone-200 bg-white hover:border-stone-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700"
-            }`}
-          >
-            <span
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg ${
-                action.primary
-                  ? "bg-amber-100 dark:bg-amber-900/50"
-                  : "bg-stone-100 dark:bg-stone-800"
-              }`}
-            >
-              {action.icon}
-            </span>
-            <span>
-              <span className="block text-lg font-semibold">{action.title}</span>
-              <span className="mt-1 block text-sm leading-relaxed text-stone-600 dark:text-stone-400">
-                {action.description}
-              </span>
-            </span>
-          </Link>
-        ))}
-      </div>
+      <Link
+        href="/library"
+        className="group flex flex-col items-center rounded-3xl border border-stone-200/80 bg-white px-6 py-10 shadow-sm transition active:scale-[0.99] hover:border-stone-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900"
+      >
+        <GoodNotesFolderIcon colorId="purple" size={96} />
+        <span className="mt-4 text-xl font-semibold">Library</span>
+        <span className="mt-1 text-center text-sm text-stone-500 dark:text-stone-400">
+          Folders, notebooks, and annotated PDFs
+        </span>
+      </Link>
+
+      <p className="text-center text-sm text-stone-400 dark:text-stone-500">
+        Tap <span className="font-semibold text-sky-500">+ New</span> above to import or
+        start quickly
+      </p>
     </div>
   );
 }
