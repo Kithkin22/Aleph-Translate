@@ -72,16 +72,16 @@ export function InkLayer({
   }
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (!interactive || tool === "eraser") return;
+    if (!interactive) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     const pt = localPoint(e);
     activeStroke.current = {
       id: `stroke-${Date.now()}`,
       page: 0,
       points: [{ ...pt, timestamp: Date.now() }],
-      color: tool === "highlighter" ? "#FDE047" : "#1D4ED8",
-      width: strokeWidth(tool, pt.pressure),
-      tool,
+      color: tool === "eraser" ? "#EF4444" : tool === "highlighter" ? "#FDE047" : "#1D4ED8",
+      width: tool === "eraser" ? 8 : strokeWidth(tool, pt.pressure),
+      tool: tool === "eraser" ? "eraser" : tool,
     };
   }
 
@@ -94,7 +94,18 @@ export function InkLayer({
     if (!ctx || !canvas) return;
     ctx.clearRect(0, 0, width, height);
     for (const stroke of strokes) drawStroke(ctx, stroke);
-    drawStroke(ctx, activeStroke.current);
+    if (activeStroke.current) {
+      if (activeStroke.current.tool === "eraser") {
+        ctx.save();
+        ctx.strokeStyle = "#EF444488";
+        ctx.lineWidth = activeStroke.current.width;
+        ctx.setLineDash([6, 4]);
+        drawStroke(ctx, activeStroke.current);
+        ctx.restore();
+      } else {
+        drawStroke(ctx, activeStroke.current);
+      }
+    }
   }
 
   function handlePointerUp(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -103,7 +114,7 @@ export function InkLayer({
     activeStroke.current = null;
     if (stroke.points.length > 1) {
       onStrokeComplete(stroke);
-      if (onStrokeBounds) {
+      if (onStrokeBounds && stroke.tool !== "eraser") {
         const xs = stroke.points.map((p) => p.x);
         const ys = stroke.points.map((p) => p.y);
         const minX = Math.min(...xs);

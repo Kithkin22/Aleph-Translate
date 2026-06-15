@@ -16,6 +16,7 @@ import {
   resolvePdfLanguage,
   writingDirectionForLanguage,
 } from "@/lib/pdf/detectLanguage";
+import { findStrokesToErase, isScribbleEraseGesture } from "@/lib/ink/scribbleErase";
 import { getBlob } from "@/lib/storage/indexedDb";
 
 const PdfViewer = dynamic(
@@ -164,11 +165,39 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
     return map;
   }, [page.ink, pageCount, writingDirection, zoomController]);
 
-  function handleStroke(stroke: Stroke) {
+  function handleEraseStrokes(pageNum: number, strokeIds: string[]) {
+    if (strokeIds.length === 0) return;
+    patchInk(pageNum, (data) => ({
+      ...data,
+      strokes: data.strokes.filter((s) => !strokeIds.includes(s.id)),
+    }));
+  }
+
+  function handleInkStroke(stroke: Stroke) {
+    const existing = strokesByPage[stroke.page] ?? [];
+
+    if (stroke.tool === "eraser") {
+      const ids = findStrokesToErase(stroke, existing, 22);
+      handleEraseStrokes(stroke.page, ids);
+      return;
+    }
+
+    if (stroke.tool === "pen" && isScribbleEraseGesture(stroke)) {
+      const ids = findStrokesToErase(stroke, existing);
+      if (ids.length > 0) {
+        handleEraseStrokes(stroke.page, ids);
+        return;
+      }
+    }
+
     patchInk(stroke.page, (data) => ({
       ...data,
       strokes: [...data.strokes, stroke],
     }));
+  }
+
+  function handleStroke(stroke: Stroke) {
+    handleInkStroke(stroke);
   }
 
   function handleStrokeBounds(

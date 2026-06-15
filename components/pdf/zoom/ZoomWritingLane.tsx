@@ -119,6 +119,8 @@ export function ZoomWritingLane({
           ? "Right-to-left writing"
           : "Left-to-right writing";
 
+  const eraseHint = "Scribble back-and-forth over ink to erase";
+
   function lanePoint(e: React.PointerEvent<HTMLCanvasElement>) {
     const canvas = laneRef.current!;
     const rect = canvas.getBoundingClientRect();
@@ -188,6 +190,7 @@ export function ZoomWritingLane({
         <div className="min-w-0">
           <span className="text-xs font-semibold text-gray-700">Zoom window</span>
           <p className="truncate text-[11px] text-gray-500">{languageLabel}</p>
+          <p className="truncate text-[10px] text-gray-400">{eraseHint}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <button
