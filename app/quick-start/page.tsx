@@ -17,6 +17,8 @@ export default function QuickStartPage() {
     fileName: string;
     pageCount: number;
     buffer: ArrayBuffer;
+    sourceLanguage: import("@/lib/types/project").SourceLanguage;
+    writingDirection: import("@/lib/ink/types").WritingDirection;
   }) {
     setBusy(true);
     try {
@@ -26,6 +28,8 @@ export default function QuickStartPage() {
         fileName: input.fileName,
         pageCount: input.pageCount,
         pdfBuffer: input.buffer,
+        sourceLanguage: input.sourceLanguage,
+        writingDirection: input.writingDirection,
       });
       router.push(pagePath(page));
     } catch {

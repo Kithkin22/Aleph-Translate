@@ -67,7 +67,7 @@ function PdfPageView({
 
   return (
     <div className="relative mx-auto w-fit bg-white shadow-sm ring-1 ring-gray-200">
-      <canvas ref={canvasRef} className="block max-w-full" />
+      <canvas ref={canvasRef} data-pdf-canvas className="block max-w-full" />
       {size.width > 0 ? (
         <>
           <InkLayer
@@ -105,6 +105,7 @@ interface PdfViewerProps {
   onStrokeBounds: (page: number, bounds: { x: number; y: number; w: number; h: number }) => void;
   onFocusDrag: (page: number, rect: FocusRegion["rect"]) => void;
   onPageVisible: (page: number) => void;
+  focusScrollToken?: number;
 }
 
 export function PdfViewer({
@@ -119,6 +120,7 @@ export function PdfViewer({
   onStrokeBounds,
   onFocusDrag,
   onPageVisible,
+  focusScrollToken = 0,
 }: PdfViewerProps) {
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -155,6 +157,15 @@ export function PdfViewer({
     const target = container.querySelector(`[data-page="${currentPage}"]`);
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [currentPage, doc]);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || focusScrollToken === 0) return;
+    const focusEl = container.querySelector(
+      `[data-page="${currentPage}"] [data-focus-rect]`,
+    );
+    focusEl?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focusScrollToken, currentPage]);
 
   useEffect(() => {
     const container = scrollRef.current;

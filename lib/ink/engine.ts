@@ -37,12 +37,14 @@ export interface CoordinateMapper {
     laneY: number,
     focus: FocusRegion,
     pageSize: { width: number; height: number },
+    laneSize?: { width: number; height: number },
   ): { x: number; y: number };
   pageToLane(
     pageX: number,
     pageY: number,
     focus: FocusRegion,
     pageSize: { width: number; height: number },
+    laneSize?: { width: number; height: number },
   ): { x: number; y: number };
 }
 

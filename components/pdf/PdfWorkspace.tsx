@@ -1,15 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { PdfAnnotationToolbar, type AnnotationTool } from "@/components/pdf/PdfAnnotationToolbar";
 import { TranslateWorkspaceShell } from "@/components/pdf/TranslateWorkspaceShell";
 import { ZoomWritingLane } from "@/components/pdf/zoom/ZoomWritingLane";
 import { useAutosave } from "@/hooks/useAutosave";
+import { defaultFocusRect } from "@/lib/ink/focusRect";
 import { createZoomLaneController } from "@/lib/ink/zoomLaneController";
-import type { FocusRegion, InkDocument, PageInkData, Stroke } from "@/lib/ink/types";
+import type { FocusRegion, InkDocument, PageInkData, Stroke, WritingDirection } from "@/lib/ink/types";
 import { computePageCompletion } from "@/lib/library/completion";
 import type { Page } from "@/lib/library/types";
+import {
+  detectPdfLanguage,
+  resolvePdfLanguage,
+  writingDirectionForLanguage,
+} from "@/lib/pdf/detectLanguage";
 import { getBlob } from "@/lib/storage/indexedDb";
 
 const PdfViewer = dynamic(
@@ -40,26 +46,56 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
   const [zoomLaneEnabled, setZoomLaneEnabled] = useState(true);
   const [currentPage, setCurrentPage] = useState(page.pdf?.currentPage ?? 1);
   const [pageCanvas, setPageCanvas] = useState<HTMLCanvasElement | null>(null);
+  const [focusScrollToken, setFocusScrollToken] = useState(0);
+  const languageDetected = useRef(false);
 
-  const zoomController = useMemo(() => createZoomLaneController(), []);
+  const writingDirection: WritingDirection = page.pdf?.writingDirection ?? "ltr";
+
+  const zoomController = useMemo(
+    () => createZoomLaneController(2.5, writingDirection),
+    // Recreate only when document changes — direction updates go through setDirection
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [page.id],
+  );
   const { status, scheduleSave } = useAutosave(page);
 
-  const writingDirection = page.pdf?.writingDirection ?? "ltr";
   const pageCount = page.pdf?.pageCount ?? 0;
 
   useEffect(() => {
     const key = page.pdf?.blobKey;
     if (!key) return;
     let cancelled = false;
-    void getBlob(key).then((data) => {
+    void getBlob(key).then(async (data) => {
       if (cancelled) return;
-      if (data) setBlob(data);
-      else setBlobError(true);
+      if (!data) {
+        setBlobError(true);
+        return;
+      }
+      setBlob(data);
+
+      if (!languageDetected.current && page.sourceLanguage === "unknown") {
+        languageDetected.current = true;
+        const fromText = await detectPdfLanguage(data);
+        const sourceLanguage = resolvePdfLanguage(fromText, page.pdf?.fileName ?? "");
+        if (sourceLanguage !== "unknown") {
+          const dir = writingDirectionForLanguage(sourceLanguage);
+          onPageChange((prev) => {
+            const next: Page = {
+              ...prev,
+              sourceLanguage,
+              pdf: prev.pdf ? { ...prev.pdf, writingDirection: dir } : prev.pdf,
+            };
+            scheduleSave(next);
+            return next;
+          });
+          zoomController.setDirection(currentPage, dir);
+        }
+      }
     });
     return () => {
       cancelled = true;
     };
-  }, [page.pdf?.blobKey]);
+  }, [page.pdf?.blobKey, page.sourceLanguage, page.pdf?.fileName, onPageChange, scheduleSave, zoomController, currentPage]);
 
   useEffect(() => {
     if (!page.ink) return;
@@ -118,15 +154,12 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
         ({
           id: `focus-${i}`,
           page: i,
-          rect:
-            writingDirection === "rtl"
-              ? { x: 0.45, y: 0.72, w: 0.45, h: 0.12 }
-              : { x: 0.1, y: 0.72, w: 0.45, h: 0.12 },
+          rect: defaultFocusRect(writingDirection),
           direction: writingDirection,
           zoomFactor: 2.5,
         } satisfies FocusRegion);
-      map[i] = focus;
-      if (!fromController) zoomController.regions.set(i, focus);
+      map[i] = { ...focus, direction: writingDirection };
+      if (!fromController) zoomController.regions.set(i, map[i]);
     }
     return map;
   }, [page.ink, pageCount, writingDirection, zoomController]);
@@ -150,6 +183,7 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
           ...data,
           focusRegions: [focus],
         }));
+        setFocusScrollToken((t) => t + 1);
       }
     }
   }
@@ -165,7 +199,7 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
     }
   }
 
-  function handleWritingDirectionChange(dir: "ltr" | "rtl") {
+  function handleWritingDirectionChange(dir: WritingDirection) {
     onPageChange((prev) => {
       const next: Page = {
         ...prev,
@@ -175,6 +209,14 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
       return next;
     });
     zoomController.setDirection(currentPage, dir);
+    const focus = zoomController.getFocus(currentPage);
+    if (focus) {
+      patchInk(currentPage, (data) => ({
+        ...data,
+        focusRegions: [focus],
+      }));
+      setFocusScrollToken((t) => t + 1);
+    }
   }
 
   function handleNudge(direction: "left" | "right") {
@@ -186,15 +228,23 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
         ? { ...focus.rect, x: Math.max(0, focus.rect.x - step) }
         : { ...focus.rect, x: Math.min(1 - focus.rect.w, focus.rect.x + step) };
     handleFocusDrag(currentPage, nextRect);
+    setFocusScrollToken((t) => t + 1);
   }
 
-  // Capture page canvas for zoom lane preview (from visible PDF page)
+  // Keep page canvas in sync for zoom lane magnification
   useEffect(() => {
-    const el = document.querySelector(`[data-page="${currentPage}"] canvas`);
-    if (el instanceof HTMLCanvasElement) {
-      setPageCanvas(el);
+    function refreshCanvas() {
+      const pdfCanvas = document.querySelector(
+        `[data-page="${currentPage}"] [data-pdf-canvas]`,
+      );
+      if (pdfCanvas instanceof HTMLCanvasElement) {
+        setPageCanvas(pdfCanvas);
+      }
     }
-  }, [currentPage, blob]);
+    refreshCanvas();
+    const interval = setInterval(refreshCanvas, 500);
+    return () => clearInterval(interval);
+  }, [currentPage, blob, focusByPage[currentPage]?.rect.x, focusScrollToken]);
 
   if (blobError || !page.pdf) {
     return (
@@ -229,6 +279,7 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
           onWritingDirectionChange={handleWritingDirectionChange}
           zoomLaneEnabled={zoomLaneEnabled}
           onZoomLaneToggle={() => setZoomLaneEnabled((v) => !v)}
+          detectedLanguage={page.sourceLanguage}
         />
       }
       bottom={
@@ -239,7 +290,9 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
           focus={activeFocus}
           strokes={activeStrokes}
           writingDirection={writingDirection}
+          detectedLanguage={page.sourceLanguage}
           onStroke={handleStroke}
+          onStrokeBounds={(bounds) => handleStrokeBounds(currentPage, bounds)}
           onNudge={handleNudge}
         />
       }
@@ -253,6 +306,7 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
           tool={tool}
           focusByPage={focusByPage}
           showFocus={zoomLaneEnabled}
+          focusScrollToken={focusScrollToken}
           onStroke={handleStroke}
           onStrokeBounds={handleStrokeBounds}
           onFocusDrag={handleFocusDrag}

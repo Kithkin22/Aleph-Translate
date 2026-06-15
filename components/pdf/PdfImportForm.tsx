@@ -10,6 +10,8 @@ interface PdfImportFormProps {
     fileName: string;
     pageCount: number;
     buffer: ArrayBuffer;
+    sourceLanguage: import("@/lib/types/project").SourceLanguage;
+    writingDirection: import("@/lib/ink/types").WritingDirection;
   }) => void | Promise<void>;
   hint?: string;
 }
@@ -27,9 +29,10 @@ export function PdfImportForm({ busy, onImport, hint }: PdfImportFormProps) {
     }
     setError(null);
     try {
-      const { buffer, pageCount, fileName } = await readPdfFile(file);
+      const { buffer, pageCount, fileName, sourceLanguage, writingDirection } =
+        await readPdfFile(file);
       const title = name.trim() || defaultPdfTitle(fileName);
-      await onImport({ title, fileName, pageCount, buffer });
+      await onImport({ title, fileName, pageCount, buffer, sourceLanguage, writingDirection });
     } catch (e) {
       setError(e instanceof PdfImportError ? e.message : "Could not import PDF.");
     }

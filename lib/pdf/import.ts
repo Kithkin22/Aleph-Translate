@@ -1,5 +1,12 @@
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import { MAX_PDF_BYTES } from "@/lib/pdf/constants";
+import {
+  detectPdfLanguage,
+  resolvePdfLanguage,
+  writingDirectionForLanguage,
+} from "@/lib/pdf/detectLanguage";
+import type { SourceLanguage } from "@/lib/types/project";
+import type { WritingDirection } from "@/lib/ink/types";
 
 let workerConfigured = false;
 
@@ -35,6 +42,8 @@ export async function readPdfFile(file: File): Promise<{
   buffer: ArrayBuffer;
   pageCount: number;
   fileName: string;
+  sourceLanguage: SourceLanguage;
+  writingDirection: WritingDirection;
 }> {
   validatePdfFile(file);
   const buffer = await file.arrayBuffer();
@@ -45,7 +54,10 @@ export async function readPdfFile(file: File): Promise<{
   if (pageCount < 1) {
     throw new PdfImportError("Could not read pages from that PDF.");
   }
-  return { buffer, pageCount, fileName: file.name };
+  const fromText = await detectPdfLanguage(buffer);
+  const sourceLanguage = resolvePdfLanguage(fromText, file.name);
+  const writingDirection = writingDirectionForLanguage(sourceLanguage);
+  return { buffer, pageCount, fileName: file.name, sourceLanguage, writingDirection };
 }
 
 export function defaultPdfTitle(fileName: string): string {

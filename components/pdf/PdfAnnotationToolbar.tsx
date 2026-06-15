@@ -9,6 +9,7 @@ interface PdfAnnotationToolbarProps {
   onWritingDirectionChange: (dir: "ltr" | "rtl") => void;
   zoomLaneEnabled: boolean;
   onZoomLaneToggle: () => void;
+  detectedLanguage?: "hebrew" | "greek" | "english" | "unknown";
 }
 
 function ToolButton({
@@ -46,7 +47,10 @@ export function PdfAnnotationToolbar({
   onWritingDirectionChange,
   zoomLaneEnabled,
   onZoomLaneToggle,
+  detectedLanguage,
 }: PdfAnnotationToolbarProps) {
+  const autoRtl =
+    detectedLanguage === "hebrew" || detectedLanguage === "greek";
   return (
     <div className="flex items-center gap-1 overflow-x-auto border-t border-gray-100 px-3 py-1.5 md:px-4">
       <ToolButton active={tool === "pen"} label="Pen" onClick={() => onToolChange("pen")}>
@@ -116,8 +120,14 @@ export function PdfAnnotationToolbar({
             : "text-gray-600 hover:bg-gray-100"
         }`}
       >
-        Zoom lane
+        Zoom window
       </button>
+
+      {autoRtl ? (
+        <span className="ml-1 rounded-md bg-blue-50 px-2 py-1 text-[11px] font-medium text-blue-600">
+          {detectedLanguage === "hebrew" ? "Hebrew" : "Greek"} · RTL
+        </span>
+      ) : null}
     </div>
   );
 }

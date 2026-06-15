@@ -1,28 +1,25 @@
 import type { ZoomLaneController, AutoAdvanceResult } from "@/lib/ink/engine";
 import type { FocusRegion, NormalizedRect, WritingDirection } from "@/lib/ink/types";
-import { AUTO_ADVANCE_THRESHOLD } from "@/lib/pdf/constants";
+import { defaultFocusRect, focusRectForDirection } from "@/lib/ink/focusRect";
 
-function defaultFocusRect(direction: WritingDirection): NormalizedRect {
-  if (direction === "rtl") {
-    return { x: 0.45, y: 0.72, w: 0.45, h: 0.12 };
-  }
-  return { x: 0.1, y: 0.72, w: 0.45, h: 0.12 };
-}
+const ADVANCE_OVERLAP = 0.7;
+const LTR_TRAILING_THRESHOLD = 0.85;
+const RTL_TRAILING_THRESHOLD = 0.15;
 
 export function createZoomLaneController(
   zoomFactor = 2.5,
+  initialDirection: WritingDirection = "ltr",
 ): ZoomLaneController & { regions: Map<number, FocusRegion> } {
   const regions = new Map<number, FocusRegion>();
 
   function ensureFocus(page: number): FocusRegion {
     const existing = regions.get(page);
     if (existing) return existing;
-    const direction: WritingDirection = "ltr";
     const region: FocusRegion = {
       id: `focus-${page}`,
       page,
-      rect: defaultFocusRect(direction),
-      direction,
+      rect: defaultFocusRect(initialDirection),
+      direction: initialDirection,
       zoomFactor,
     };
     regions.set(page, region);
@@ -40,32 +37,39 @@ export function createZoomLaneController(
     },
     setDirection(page, direction) {
       const current = ensureFocus(page);
-      regions.set(page, { ...current, direction });
+      regions.set(page, {
+        ...current,
+        direction,
+        rect: focusRectForDirection(direction, current.rect),
+      });
     },
     checkAutoAdvance(page, strokeBounds): AutoAdvanceResult | null {
       const focus = ensureFocus(page);
       const rect = focus.rect;
-      const trailingEdge =
-        focus.direction === "rtl"
-          ? strokeBounds.x
-          : strokeBounds.x + strokeBounds.w;
-      const focusTrailing =
-        focus.direction === "rtl" ? rect.x : rect.x + rect.w;
-      const focusLeading = focus.direction === "rtl" ? rect.x + rect.w : rect.x;
-      const step = rect.w * 0.85;
+      const step = rect.w * ADVANCE_OVERLAP;
 
-      const nearTrailing =
-        focus.direction === "rtl"
-          ? trailingEdge <= focusLeading + rect.w * (1 - AUTO_ADVANCE_THRESHOLD)
-          : trailingEdge >= focusTrailing - rect.w * (1 - AUTO_ADVANCE_THRESHOLD);
+      if (focus.direction === "rtl") {
+        // RTL: trailing edge is the left side of the stroke
+        if (strokeBounds.x > rect.x + rect.w * RTL_TRAILING_THRESHOLD) {
+          return null;
+        }
+        const nextRect: NormalizedRect = {
+          ...rect,
+          x: Math.max(0, rect.x - step),
+        };
+        regions.set(page, { ...focus, rect: nextRect });
+        return { advanced: true, nextFocus: nextRect };
+      }
 
-      if (!nearTrailing) return null;
-
-      const nextRect: NormalizedRect =
-        focus.direction === "rtl"
-          ? { ...rect, x: Math.max(0, rect.x - step) }
-          : { ...rect, x: Math.min(1 - rect.w, rect.x + step) };
-
+      // LTR: trailing edge is the right side of the stroke
+      const trailing = strokeBounds.x + strokeBounds.w;
+      if (trailing < rect.x + rect.w * LTR_TRAILING_THRESHOLD) {
+        return null;
+      }
+      const nextRect: NormalizedRect = {
+        ...rect,
+        x: Math.min(1 - rect.w, rect.x + step),
+      };
       regions.set(page, { ...focus, rect: nextRect });
       return { advanced: true, nextFocus: nextRect };
     },
