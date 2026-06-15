@@ -1,6 +1,7 @@
 import {
   LIBRARY_KEY,
   MIGRATION_V1_KEY,
+  MIGRATION_V2_KEY,
   NOTEBOOKS_KEY,
   PAGES_INDEX_KEY,
   pageKey,
@@ -8,6 +9,12 @@ import {
   PROJECTS_INDEX_KEY,
 } from "@/lib/storage/keys";
 import { computePageCompletion } from "@/lib/library/completion";
+import {
+  DEFAULT_FOLDER_COLOR,
+  DEFAULT_NOTEBOOK_PAPER,
+  type FolderColorId,
+  type NotebookPaper,
+} from "@/lib/library/appearance";
 import type {
   FolderId,
   FolderMeta,
@@ -20,7 +27,6 @@ import type {
   PageIndexEntry,
 } from "@/lib/library/types";
 import {
-  DEFAULT_FOLDER_NAMES,
   INBOX_FOLDER_NAME,
   INBOX_NOTEBOOK_NAME,
 } from "@/lib/library/types";
@@ -119,26 +125,23 @@ function upsertPageIndex(page: Page): void {
   writePagesIndex(entries);
 }
 
-function seedDefaultFolders(): FolderMeta[] {
+function folderForLegacyImport(folders: FolderMeta[]): FolderMeta {
+  const existing = folders.find((f) => !f.isInbox);
+  if (existing) return existing;
+
   const ts = now();
-  return DEFAULT_FOLDER_NAMES.map((name, i) => ({
+  const imported: FolderMeta = {
     id: newId(),
-    name,
-    sortOrder: i,
-    isDefault: true,
+    name: "Imported",
+    sortOrder: folders.filter((f) => !f.isInbox).length,
+    color: DEFAULT_FOLDER_COLOR,
     createdAt: ts,
     updatedAt: ts,
-  }));
-}
-
-function folderForLanguage(
-  folders: FolderMeta[],
-  sourceLanguage: string,
-): FolderMeta {
-  if (sourceLanguage === "greek") {
-    return folders.find((f) => f.name === "Greek") ?? folders[0];
-  }
-  return folders.find((f) => f.name === "Hebrew") ?? folders[0];
+  };
+  const library = readLibraryRoot()!;
+  library.folders.push(imported);
+  writeLibraryRoot(library);
+  return imported;
 }
 
 function migrateLegacyProjects(): void {
@@ -167,7 +170,7 @@ function migrateLegacyProjects(): void {
         continue;
       }
 
-      const folder = folderForLanguage(folders, project.sourceLanguage);
+      const folder = folderForLegacyImport(folders);
       if (!folder) continue;
 
       let notebook = notebooks.find(
@@ -218,6 +221,57 @@ function migrateLegacyProjects(): void {
   }
 }
 
+function migrateLibraryV2(): void {
+  try {
+    if (localStorage.getItem(MIGRATION_V2_KEY)) return;
+
+    const library = readLibraryRoot();
+    if (!library) {
+      localStorage.setItem(MIGRATION_V2_KEY, "1");
+      return;
+    }
+
+    const notebooks = readNotebooks();
+    const pages = readPagesIndex();
+
+    library.folders = library.folders.filter((folder) => {
+      if (folder.isInbox) return true;
+      if (folder.name === "Hebrew" || folder.name === "Greek") {
+        const hasNotebooks = notebooks.some((n) => n.folderId === folder.id);
+        const hasPages = pages.some((p) => p.folderId === folder.id);
+        return hasNotebooks || hasPages;
+      }
+      return true;
+    });
+
+    let changed = false;
+    for (const folder of library.folders) {
+      if (!folder.color) {
+        folder.color = folder.isInbox ? "blue" : DEFAULT_FOLDER_COLOR;
+        changed = true;
+      }
+    }
+
+    for (const notebook of notebooks) {
+      if (!notebook.paper) {
+        notebook.paper = DEFAULT_NOTEBOOK_PAPER;
+        changed = true;
+      }
+      if (!notebook.color) {
+        notebook.color = DEFAULT_FOLDER_COLOR;
+        changed = true;
+      }
+    }
+
+    writeLibraryRoot(library);
+    if (changed) writeNotebooks(notebooks);
+    localStorage.setItem(MIGRATION_V2_KEY, "1");
+    notifyStorageChange();
+  } catch {
+    localStorage.setItem(MIGRATION_V2_KEY, "1");
+  }
+}
+
 export function ensureLibrary(): Library {
   if (typeof window === "undefined") {
     return { version: 1, folders: [] };
@@ -226,7 +280,7 @@ export function ensureLibrary(): Library {
   try {
     let library = readLibraryRoot();
     if (!library) {
-      library = { version: 1, folders: seedDefaultFolders() };
+      library = { version: 1, folders: [] };
       writeLibraryRoot(library);
       writeNotebooks([]);
       writePagesIndex([]);
@@ -234,6 +288,7 @@ export function ensureLibrary(): Library {
 
     migrateLegacyProjects();
     ensureInbox();
+    migrateLibraryV2();
     return readLibraryRoot() ?? { version: 1, folders: [] };
   } catch {
     return { version: 1, folders: [] };
@@ -254,6 +309,7 @@ function ensureInbox(): { folderId: FolderId; notebookId: NotebookId } {
     name: INBOX_FOLDER_NAME,
     sortOrder: -1,
     isInbox: true,
+    color: "blue",
     createdAt: ts,
     updatedAt: ts,
   };
@@ -264,6 +320,8 @@ function ensureInbox(): { folderId: FolderId; notebookId: NotebookId } {
     folderId: inboxFolder.id,
     name: INBOX_NOTEBOOK_NAME,
     sortOrder: 0,
+    paper: DEFAULT_NOTEBOOK_PAPER,
+    color: "blue",
     createdAt: ts,
     updatedAt: ts,
   };
@@ -307,13 +365,15 @@ export function getFolder(id: FolderId): FolderMeta | null {
   return listFolders().find((f) => f.id === id) ?? null;
 }
 
-export function createFolder(name: string): FolderMeta {
+export function createFolder(name: string, color: FolderColorId = DEFAULT_FOLDER_COLOR): FolderMeta {
   const library = ensureLibrary();
   const ts = now();
+  const userFolders = library.folders.filter((f) => !f.isInbox);
   const folder: FolderMeta = {
     id: newId(),
     name: name.trim() || "New Folder",
-    sortOrder: library.folders.length,
+    sortOrder: userFolders.length,
+    color,
     createdAt: ts,
     updatedAt: ts,
   };
@@ -321,6 +381,65 @@ export function createFolder(name: string): FolderMeta {
   writeLibraryRoot({ ...library, folders: library.folders });
   notifyStorageChange();
   return folder;
+}
+
+export function updateFolderColor(id: FolderId, color: FolderColorId): FolderMeta {
+  const library = ensureLibrary();
+  const folder = library.folders.find((f) => f.id === id);
+  if (!folder) throw new Error("Folder not found");
+  folder.color = color;
+  folder.updatedAt = now();
+  writeLibraryRoot(library);
+  notifyStorageChange();
+  return folder;
+}
+
+export function reorderFolders(orderedIds: FolderId[]): void {
+  const library = ensureLibrary();
+  const inbox = library.folders.find((f) => f.isInbox);
+  const reorderable = orderedIds.filter((id) => id !== inbox?.id);
+
+  reorderable.forEach((id, index) => {
+    const folder = library.folders.find((f) => f.id === id && !f.isInbox);
+    if (folder) {
+      folder.sortOrder = index;
+      folder.updatedAt = now();
+    }
+  });
+
+  writeLibraryRoot(library);
+  notifyStorageChange();
+}
+
+export function deleteFolder(id: FolderId): void {
+  const library = ensureLibrary();
+  const folder = library.folders.find((f) => f.id === id);
+  if (!folder) throw new Error("Folder not found");
+  if (folder.isInbox) throw new Error("Cannot delete Inbox");
+
+  const notebookIds = readNotebooks()
+    .filter((n) => n.folderId === id)
+    .map((n) => n.id);
+  const pageIds = readPagesIndex()
+    .filter((p) => p.folderId === id)
+    .map((p) => p.id);
+
+  for (const pageId of pageIds) {
+    localStorage.removeItem(pageKey(pageId));
+  }
+  writePagesIndex(readPagesIndex().filter((p) => p.folderId !== id));
+  writeNotebooks(readNotebooks().filter((n) => n.folderId !== id));
+
+  library.folders = library.folders.filter((f) => f.id !== id);
+  if (
+    library.lastLocation &&
+    (library.lastLocation.folderId === id ||
+      notebookIds.includes(library.lastLocation.notebookId))
+  ) {
+    delete library.lastLocation;
+  }
+  writeLibraryRoot(library);
+  notifyStorageChange();
 }
 
 export function renameFolder(id: FolderId, name: string): FolderMeta {
@@ -344,7 +463,12 @@ export function getNotebook(id: NotebookId): NotebookMeta | null {
   return readNotebooks().find((n) => n.id === id) ?? null;
 }
 
-export function createNotebook(folderId: FolderId, name: string): NotebookMeta {
+export function createNotebook(
+  folderId: FolderId,
+  name: string,
+  paper: NotebookPaper = DEFAULT_NOTEBOOK_PAPER,
+  color: FolderColorId = DEFAULT_FOLDER_COLOR,
+): NotebookMeta {
   const notebooks = readNotebooks();
   const ts = now();
   const notebook: NotebookMeta = {
@@ -352,12 +476,58 @@ export function createNotebook(folderId: FolderId, name: string): NotebookMeta {
     folderId,
     name: name.trim() || "New Notebook",
     sortOrder: notebooks.filter((n) => n.folderId === folderId).length,
+    paper,
+    color,
     createdAt: ts,
     updatedAt: ts,
   };
   writeNotebooks([...notebooks, notebook]);
   notifyStorageChange();
   return notebook;
+}
+
+export function updateNotebookPaper(id: NotebookId, paper: NotebookPaper): NotebookMeta {
+  const notebooks = readNotebooks();
+  const notebook = notebooks.find((n) => n.id === id);
+  if (!notebook) throw new Error("Notebook not found");
+  notebook.paper = paper;
+  notebook.updatedAt = now();
+  writeNotebooks(notebooks);
+  notifyStorageChange();
+  return notebook;
+}
+
+export function updateNotebookColor(id: NotebookId, color: FolderColorId): NotebookMeta {
+  const notebooks = readNotebooks();
+  const notebook = notebooks.find((n) => n.id === id);
+  if (!notebook) throw new Error("Notebook not found");
+  notebook.color = color;
+  notebook.updatedAt = now();
+  writeNotebooks(notebooks);
+  notifyStorageChange();
+  return notebook;
+}
+
+export function deleteNotebook(id: NotebookId): void {
+  const notebooks = readNotebooks();
+  const notebook = notebooks.find((n) => n.id === id);
+  if (!notebook) throw new Error("Notebook not found");
+
+  const pageIds = readPagesIndex()
+    .filter((p) => p.notebookId === id)
+    .map((p) => p.id);
+  for (const pageId of pageIds) {
+    localStorage.removeItem(pageKey(pageId));
+  }
+  writePagesIndex(readPagesIndex().filter((p) => p.notebookId !== id));
+  writeNotebooks(notebooks.filter((n) => n.id !== id));
+
+  const library = ensureLibrary();
+  if (library.lastLocation?.notebookId === id) {
+    delete library.lastLocation;
+    writeLibraryRoot(library);
+  }
+  notifyStorageChange();
 }
 
 export function renameNotebook(id: NotebookId, name: string): NotebookMeta {

@@ -4,6 +4,7 @@
  * @see LIBRARY_STRUCTURE.md
  */
 
+import type { FolderColorId, NotebookPaper } from "@/lib/library/appearance";
 import type { InkDocument } from "@/lib/ink/types";
 import type { SourceLanguage, Verse } from "@/lib/types/project";
 
@@ -32,8 +33,9 @@ export interface FolderMeta {
   id: FolderId;
   name: string;
   sortOrder: number;
-  isDefault?: boolean;
-  /** System folder for quick-start chapters awaiting filing */
+  /** Finder-style folder color */
+  color?: FolderColorId;
+  /** System folder for quick-start imports awaiting filing */
   isInbox?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -44,6 +46,10 @@ export interface NotebookMeta {
   folderId: FolderId;
   name: string;
   sortOrder: number;
+  /** White or black paper for the notebook icon and future PDF workspace */
+  paper?: NotebookPaper;
+  /** Accent color on notebook cover */
+  color?: FolderColorId;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,5 +93,3 @@ export interface Library {
 
 export const INBOX_FOLDER_NAME = "Inbox";
 export const INBOX_NOTEBOOK_NAME = "Quick Start";
-
-export const DEFAULT_FOLDER_NAMES = ["Hebrew", "Greek"] as const;

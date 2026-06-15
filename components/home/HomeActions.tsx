@@ -11,7 +11,7 @@ const actions = [
   {
     href: "/library",
     title: "Library",
-    description: "Browse Hebrew, Greek, Inbox, and custom folders.",
+    description: "Browse folders and notebooks — organize annotated PDFs.",
     icon: "▤",
     primary: false,
   },

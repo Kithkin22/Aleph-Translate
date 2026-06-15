@@ -2,6 +2,7 @@
 export const PROJECTS_INDEX_KEY = "aleph:projects:index";
 export const LAST_OPENED_KEY = "aleph:lastOpened";
 export const MIGRATION_V1_KEY = "aleph:migration:v1";
+export const MIGRATION_V2_KEY = "aleph:migration:v2";
 
 /** Library keys */
 export const LIBRARY_KEY = "aleph:library";

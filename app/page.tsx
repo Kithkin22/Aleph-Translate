@@ -67,8 +67,8 @@ export default function HomePage() {
           Read. Translate. Notes.
         </h2>
         <p className="mt-3 max-w-xl text-base leading-relaxed text-stone-600 dark:text-stone-400">
-          Organize work in folders and notebooks — Hebrew, Greek, and beyond.
-          Every chapter autosaves locally on your iPad or desktop.
+          Organize annotated PDFs in folders and notebooks. Everything autosaves
+          locally on your iPad or desktop.
         </p>
       </div>
       <HomeActions

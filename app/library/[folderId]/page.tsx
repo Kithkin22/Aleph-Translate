@@ -42,7 +42,7 @@ export default function FolderPage() {
           ariaLabel="Folder name"
         />
         <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
-          Drag notebooks to reorder. Empty notebooks are allowed.
+          Drag notebooks to rearrange. Tap ··· to set paper color and cover.
         </p>
       </div>
       <NotebookList folderId={folder.id} />
