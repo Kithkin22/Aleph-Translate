@@ -13,3 +13,21 @@ export function formatRelativeTime(iso: string): string {
     year: "numeric",
   });
 }
+
+export function formatEditedLabel(iso: string): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const time = date.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  if (date.toDateString() === now.toDateString()) {
+    return `Last edited today, ${time}`;
+  }
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) {
+    return `Edited yesterday, ${time}`;
+  }
+  return `Edited ${formatRelativeTime(iso)}`;
+}

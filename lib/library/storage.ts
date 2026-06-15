@@ -563,6 +563,17 @@ export function listPages(notebookId: NotebookId): PageIndexEntry[] {
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
+/** All pages sorted by most recently updated. */
+export function listAllPages(): PageIndexEntry[] {
+  return [...readPagesIndex()].sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  );
+}
+
+export function countPagesInFolder(folderId: FolderId): number {
+  return readPagesIndex().filter((p) => p.folderId === folderId).length;
+}
+
 export function getPage(id: PageId): Page | null {
   if (typeof window === "undefined") return null;
   return readJson<Page | null>(pageKey(id), null);
