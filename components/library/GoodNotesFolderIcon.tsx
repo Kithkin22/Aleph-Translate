@@ -6,38 +6,49 @@ interface GoodNotesFolderIconProps {
   className?: string;
 }
 
-/** GoodNotes-style rounded folder icon. */
+const STROKE = "#000000";
+const STROKE_WIDTH = 3.5;
+
+/** Two-tone folder with black outline — matches Aleph library folder style. */
 export function GoodNotesFolderIcon({
   colorId,
   size = 100,
   className = "",
 }: GoodNotesFolderIconProps) {
-  const colors = folderColor(colorId);
-  const height = Math.round(size * 0.72);
-  const uid = colorId ?? "blue";
+  const { front, back, depth } = folderColor(colorId);
+  const height = Math.round(size * 0.75);
 
   return (
     <svg
       width={size}
       height={height}
-      viewBox="0 0 100 72"
+      viewBox="0 0 96 72"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       aria-hidden
     >
-      <defs>
-        <linearGradient id={`gn-folder-${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={colors.tab} />
-          <stop offset="100%" stopColor={colors.body} />
-        </linearGradient>
-      </defs>
-      <rect x="4" y="16" width="92" height="52" rx="10" fill={`url(#gn-folder-${uid})`} />
+      {/* Back panel + tab (darker) */}
       <path
-        d="M12 16 C12 10 16 8 22 8 H42 C46 8 48 6 52 4 H78 C86 4 92 10 92 16 H12 Z"
-        fill={colors.tab}
+        d="M14 28 V18 C14 11 19 6 27 6 H35 C37 6 39 4 43 2 H73 C83 2 90 9 90 18 V64 C90 69 86 72 81 72 H15 C10 72 6 68 6 63 V28 H14 Z"
+        fill={back}
+        stroke={STROKE}
+        strokeWidth={STROKE_WIDTH}
+        strokeLinejoin="round"
       />
-      <rect x="4" y="22" width="92" height="8" rx="2" fill="white" opacity="0.15" />
+      {/* Front panel (lighter) */}
+      <rect
+        x="4"
+        y="24"
+        width="88"
+        height="44"
+        rx="11"
+        fill={front}
+        stroke={STROKE}
+        strokeWidth={STROKE_WIDTH}
+      />
+      {/* Bottom depth bar */}
+      <rect x="12" y="56" width="72" height="8" rx="4" fill={depth} />
     </svg>
   );
 }

@@ -35,8 +35,8 @@ export function NotebookIcon({
     >
       <ellipse cx="38" cy="60" rx="26" ry="3" fill="#000" opacity="0.12" />
       {/* Cover spine */}
-      <rect x="10" y="8" width="14" height="52" rx="2" fill={cover.body} />
-      <rect x="10" y="8" width="6" height="52" rx="1" fill={cover.shadow} opacity="0.4" />
+      <rect x="10" y="8" width="14" height="52" rx="2" fill={cover.back} />
+      <rect x="10" y="8" width="6" height="52" rx="1" fill={cover.depth} opacity="0.4" />
       {/* Pages stack edge */}
       <rect x="22" y="10" width="40" height="50" rx="2" fill={paperStyle.page} stroke="#C8C4BC" strokeWidth="0.5" />
       {/* Ruled lines */}
@@ -60,7 +60,7 @@ export function NotebookIcon({
           rx="4"
           ry="2.5"
           fill="none"
-          stroke={cover.shadow}
+          stroke={cover.depth}
           strokeWidth="1.2"
         />
       ))}

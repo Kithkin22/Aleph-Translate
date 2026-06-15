@@ -15,7 +15,7 @@ export default function FolderPage() {
 
   if (!ready) {
     return (
-      <AppShell title="Documents" backHref="/library">
+      <AppShell title="Library" backHref="/library">
         <p className="text-stone-500">Loading…</p>
       </AppShell>
     );
@@ -23,10 +23,10 @@ export default function FolderPage() {
 
   if (!folder) {
     return (
-      <AppShell title="Documents" backHref="/library">
+      <AppShell title="Library" backHref="/library">
         <p className="text-stone-500">Folder not found.</p>
         <Link href="/library" className="mt-4 inline-block text-sky-600 underline">
-          Back to Documents
+          Back to Library
         </Link>
       </AppShell>
     );

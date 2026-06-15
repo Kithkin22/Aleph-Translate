@@ -247,7 +247,7 @@ function migrateLibraryV2(): void {
     let changed = false;
     for (const folder of library.folders) {
       if (!folder.color) {
-        folder.color = folder.isInbox ? "blue" : DEFAULT_FOLDER_COLOR;
+        folder.color = folder.isInbox ? "purple" : DEFAULT_FOLDER_COLOR;
         changed = true;
       }
     }
@@ -309,7 +309,7 @@ function ensureInbox(): { folderId: FolderId; notebookId: NotebookId } {
     name: INBOX_FOLDER_NAME,
     sortOrder: -1,
     isInbox: true,
-    color: "blue",
+    color: "purple",
     createdAt: ts,
     updatedAt: ts,
   };
@@ -321,7 +321,7 @@ function ensureInbox(): { folderId: FolderId; notebookId: NotebookId } {
     name: INBOX_NOTEBOOK_NAME,
     sortOrder: 0,
     paper: DEFAULT_NOTEBOOK_PAPER,
-    color: "blue",
+    color: "purple",
     createdAt: ts,
     updatedAt: ts,
   };

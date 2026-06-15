@@ -10,14 +10,14 @@ export default function LibraryPage() {
 
   if (!ready) {
     return (
-      <AppShell title="Documents">
+      <AppShell title="Library">
         <p className="text-stone-500">Loading…</p>
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Documents" trailing={<NewMenu context="library" />}>
+    <AppShell title="Library" trailing={<NewMenu context="library" />}>
       <FolderGrid />
     </AppShell>
   );

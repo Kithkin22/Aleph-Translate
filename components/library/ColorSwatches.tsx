@@ -50,7 +50,7 @@ export function ColorSwatches({
                   ? "border-stone-900 ring-2 ring-stone-400 dark:border-white dark:ring-stone-500"
                   : "border-white/80 shadow-sm"
               }`}
-              style={{ background: `linear-gradient(180deg, ${colors.tab}, ${colors.body})` }}
+              style={{ background: `linear-gradient(180deg, ${colors.front}, ${colors.back})` }}
             />
           );
         })}

@@ -1,14 +1,14 @@
-/** Finder-style folder colors and notebook paper options. */
+/** Folder colors — two-tone front/back with depth bar (outlined folder style). */
 
 export const FOLDER_COLORS = {
-  blue: { label: "Blue", tab: "#7CB9F5", body: "#5A9FE8", shadow: "#3A7BC8" },
-  cyan: { label: "Cyan", tab: "#7EE8E8", body: "#5AD4D4", shadow: "#3AB8B8" },
-  green: { label: "Green", tab: "#8FD694", body: "#6BCB71", shadow: "#4AAF50" },
-  yellow: { label: "Yellow", tab: "#F5D76E", body: "#E8C547", shadow: "#C9A82E" },
-  orange: { label: "Orange", tab: "#F5B07A", body: "#E8954F", shadow: "#C97530" },
-  red: { label: "Red", tab: "#F58A8A", body: "#E86B6B", shadow: "#C94A4A" },
-  purple: { label: "Purple", tab: "#C4A0F5", body: "#A87EE8", shadow: "#8A5CC9" },
-  gray: { label: "Gray", tab: "#C8C8C8", body: "#A8A8A8", shadow: "#888888" },
+  purple: { label: "Purple", front: "#C9B3F5", back: "#7B4FD4", depth: "#5B38A8" },
+  blue: { label: "Blue", front: "#9DC8FA", back: "#4A8AD4", depth: "#3568B0" },
+  cyan: { label: "Cyan", front: "#8EEDED", back: "#3BB8B8", depth: "#2A9494" },
+  green: { label: "Green", front: "#9EE0A3", back: "#4AAF50", depth: "#388A3C" },
+  yellow: { label: "Yellow", front: "#F5E08A", back: "#D4AD2A", depth: "#B08E1E" },
+  orange: { label: "Orange", front: "#F5C49A", back: "#E07A30", depth: "#B85E20" },
+  red: { label: "Red", front: "#F5A0A0", back: "#D44A4A", depth: "#B03838" },
+  gray: { label: "Gray", front: "#D4D4D4", back: "#9A9A9A", depth: "#787878" },
 } as const;
 
 export type FolderColorId = keyof typeof FOLDER_COLORS;
@@ -22,7 +22,7 @@ export const NOTEBOOK_PAPERS = {
 
 export type NotebookPaper = keyof typeof NOTEBOOK_PAPERS;
 
-export const DEFAULT_FOLDER_COLOR: FolderColorId = "blue";
+export const DEFAULT_FOLDER_COLOR: FolderColorId = "purple";
 export const DEFAULT_NOTEBOOK_PAPER: NotebookPaper = "white";
 
 export function folderColor(id: FolderColorId | undefined) {
