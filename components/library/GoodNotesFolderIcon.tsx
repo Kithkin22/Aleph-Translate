@@ -6,23 +6,26 @@ interface GoodNotesFolderIconProps {
   className?: string;
 }
 
-const STROKE = "#000000";
-const STROKE_WIDTH = 3.5;
+const OUTLINE = "#111111";
+const OUTLINE_W = 2.8;
 
-/** Two-tone folder with black outline — matches Aleph library folder style. */
+/**
+ * GoodNotes / Mac-style folder: darker back tab, lighter front panel,
+ * thick outline, rounded corners, bottom depth lip.
+ */
 export function GoodNotesFolderIcon({
   colorId,
   size = 100,
   className = "",
 }: GoodNotesFolderIconProps) {
   const { front, back, depth } = folderColor(colorId);
-  const height = Math.round(size * 0.75);
+  const height = Math.round(size * 0.8);
 
   return (
     <svg
       width={size}
       height={height}
-      viewBox="0 0 96 72"
+      viewBox="0 0 100 80"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
@@ -30,25 +33,52 @@ export function GoodNotesFolderIcon({
     >
       {/* Back panel + tab (darker) */}
       <path
-        d="M14 28 V18 C14 11 19 6 27 6 H35 C37 6 39 4 43 2 H73 C83 2 90 9 90 18 V64 C90 69 86 72 81 72 H15 C10 72 6 68 6 63 V28 H14 Z"
+        d="M 12 34
+           V 22
+           C 12 15 17 10 25 10
+           H 37
+           C 39 10 41 8 45 6
+           H 77
+           C 88 6 94 12 94 22
+           V 70
+           C 94 75 90 78 85 78
+           H 15
+           C 10 78 6 74 6 69
+           V 34
+           H 12 Z"
         fill={back}
-        stroke={STROKE}
-        strokeWidth={STROKE_WIDTH}
+        stroke={OUTLINE}
+        strokeWidth={OUTLINE_W}
         strokeLinejoin="round"
       />
-      {/* Front panel (lighter) */}
-      <rect
-        x="4"
-        y="24"
-        width="88"
-        height="44"
-        rx="11"
+
+      {/* Front pocket (lighter) */}
+      <path
+        d="M 4 32
+           H 96
+           C 98 32 99 33.5 99 36
+           V 68
+           C 99 73 95 76 90 76
+           H 10
+           C 5 76 1 72 1 67
+           V 36
+           C 1 33 3 32 4 32
+           Z"
         fill={front}
-        stroke={STROKE}
-        strokeWidth={STROKE_WIDTH}
+        stroke={OUTLINE}
+        strokeWidth={OUTLINE_W}
+        strokeLinejoin="round"
       />
-      {/* Bottom depth bar */}
-      <rect x="12" y="56" width="72" height="8" rx="4" fill={depth} />
+
+      {/* Bottom depth lip */}
+      <rect x="13" y="62" width="74" height="9" rx="4.5" fill={depth} />
+
+      {/* Soft highlight along top of front panel */}
+      <path
+        d="M 8 35 H 92 C 94 35 95 36 95 37.5 V 40 H 5 V 37.5 C 5 36 6 35 8 35 Z"
+        fill="white"
+        opacity="0.22"
+      />
     </svg>
   );
 }
