@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
-import { EditableName } from "@/components/library/EditableName";
+import { NewMenu } from "@/components/library/NewMenu";
 import { NotebookList } from "@/components/library/NotebookList";
 import { useLibraryInit } from "@/hooks/useLibraryInit";
-import { getFolder, renameFolder } from "@/lib/library/storage";
+import { getFolder } from "@/lib/library/storage";
 
 export default function FolderPage() {
   const params = useParams<{ folderId: string }>();
@@ -15,7 +15,7 @@ export default function FolderPage() {
 
   if (!ready) {
     return (
-      <AppShell title="Library" backHref="/library">
+      <AppShell title="Documents" backHref="/library">
         <p className="text-stone-500">Loading…</p>
       </AppShell>
     );
@@ -23,28 +23,21 @@ export default function FolderPage() {
 
   if (!folder) {
     return (
-      <AppShell title="Library" backHref="/library">
+      <AppShell title="Documents" backHref="/library">
         <p className="text-stone-500">Folder not found.</p>
-        <Link href="/library" className="mt-4 inline-block text-amber-700 underline">
-          Back to Library
+        <Link href="/library" className="mt-4 inline-block text-sky-600 underline">
+          Back to Documents
         </Link>
       </AppShell>
     );
   }
 
   return (
-    <AppShell title={folder.name} backHref="/library">
-      <div className="mb-6">
-        <EditableName
-          value={folder.name}
-          onSave={(name) => renameFolder(folder.id, name)}
-          className="text-2xl font-semibold"
-          ariaLabel="Folder name"
-        />
-        <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
-          Drag notebooks to rearrange. Tap ··· to set paper color and cover.
-        </p>
-      </div>
+    <AppShell
+      title={folder.name}
+      backHref="/library"
+      trailing={<NewMenu context="folder" folderId={folder.id} />}
+    >
       <NotebookList folderId={folder.id} />
     </AppShell>
   );

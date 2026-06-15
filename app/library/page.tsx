@@ -2,6 +2,7 @@
 
 import { AppShell } from "@/components/layout/AppShell";
 import { FolderGrid } from "@/components/library/FolderGrid";
+import { NewMenu } from "@/components/library/NewMenu";
 import { useLibraryFolders } from "@/hooks/useLibraryFolders";
 
 export default function LibraryPage() {
@@ -9,18 +10,14 @@ export default function LibraryPage() {
 
   if (!ready) {
     return (
-      <AppShell title="Library">
-        <p className="text-stone-500">Loading library…</p>
+      <AppShell title="Documents">
+        <p className="text-stone-500">Loading…</p>
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Library">
-      <p className="mb-6 text-base text-stone-600 dark:text-stone-400">
-        Folders contain notebooks; notebooks hold your annotated PDFs. Tap a
-        folder to open it — drag to rearrange, ··· to change color.
-      </p>
+    <AppShell title="Documents" trailing={<NewMenu context="library" />}>
       <FolderGrid />
     </AppShell>
   );
