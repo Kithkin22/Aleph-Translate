@@ -198,7 +198,7 @@ export function FocusRectOverlay({
 
   return (
     <div
-      className="absolute touch-none"
+      className="absolute z-10 touch-none"
       data-focus-rect
       style={{
         left,

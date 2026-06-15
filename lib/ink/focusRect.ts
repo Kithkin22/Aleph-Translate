@@ -1,10 +1,10 @@
 import type { NormalizedRect, WritingDirection } from "@/lib/ink/types";
 
-/** Default magnified writing band — anchored for reading direction. */
+/** Narrow writing band for margins and translation boxes. */
 export function defaultFocusRect(direction: WritingDirection): NormalizedRect {
-  const w = 0.42;
-  const h = 0.11;
-  const y = 0.74;
+  const w = 0.28;
+  const h = 0.07;
+  const y = 0.78;
   if (direction === "rtl") {
     return { x: 1 - w - 0.06, y, w, h };
   }

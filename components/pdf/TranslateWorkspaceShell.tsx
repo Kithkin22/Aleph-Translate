@@ -36,8 +36,8 @@ export function TranslateWorkspaceShell({
   const statusText = saveLabel(saveStatus);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#f8f9fa] text-gray-900">
-      <header className="shrink-0 border-b border-gray-200 bg-white pt-[env(safe-area-inset-top)]">
+    <div className="flex h-dvh flex-col overflow-hidden bg-[#f8f9fa] text-gray-900">
+      <header className="sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white pt-[env(safe-area-inset-top)] shadow-sm">
         <div className="flex h-12 items-center gap-2 px-3 md:px-4">
           <Link
             href={backHref}
