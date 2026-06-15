@@ -45,6 +45,10 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Preview before merging
+
+See **[PREVIEW.md](./PREVIEW.md)** — local dev, production-like `npm run preview`, and Vercel PR preview URLs. Agents should open **draft PRs** and wait for your approval before merging to `main`.
+
 ## Deploy on Vercel
 
 Push to GitHub and import the repository in Vercel, or:
