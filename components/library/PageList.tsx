@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PdfImportButton } from "@/components/pdf/PdfImportButton";
 import { CompletionBadge } from "@/components/library/CompletionBadge";
 import {
   deletePage,
@@ -55,12 +56,9 @@ export function PageList({ folderId, notebookId }: PageListProps) {
         <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
           Import a PDF to start translating.
         </p>
-        <Link
-          href="/quick-start"
-          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-xl bg-blue-600 px-6 font-semibold text-white hover:bg-blue-500"
-        >
+        <PdfImportButton className="mt-5 inline-flex min-h-12 items-center justify-center rounded-xl bg-blue-600 px-6 font-semibold text-white hover:bg-blue-500 disabled:opacity-50">
           Import PDF
-        </Link>
+        </PdfImportButton>
       </div>
     );
   }

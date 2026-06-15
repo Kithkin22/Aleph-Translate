@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useRef, useState, useEffect } from "react";
 import { NewMenu } from "@/components/library/NewMenu";
+import { PdfImportButton } from "@/components/pdf/PdfImportButton";
 import { IconMore } from "@/components/workspace/WorkspaceIcons";
+import Link from "next/link";
 
 export function WorkspaceToolbar() {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -22,12 +23,11 @@ export function WorkspaceToolbar() {
 
   return (
     <div className="flex items-center justify-end gap-2 border-b border-gray-200 px-6 py-3 md:px-8">
-      <Link
-        href="/quick-start"
-        className="inline-flex min-h-9 items-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
-      >
-        + Import PDF
-      </Link>
+      <div className="relative">
+        <PdfImportButton className="inline-flex min-h-9 items-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50">
+          + Import PDF
+        </PdfImportButton>
+      </div>
       <div className="[&_button]:rounded-md [&_button]:border [&_button]:border-blue-600 [&_button]:bg-white [&_button]:px-4 [&_button]:font-medium [&_button]:text-blue-600 [&_button]:shadow-none [&_button]:hover:bg-blue-50">
         <NewMenu context="library" />
       </div>
@@ -48,13 +48,6 @@ export function WorkspaceToolbar() {
               onClick={() => setMoreOpen(false)}
             >
               Open Library
-            </Link>
-            <Link
-              href="/quick-start"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-              onClick={() => setMoreOpen(false)}
-            >
-              Quick Start
             </Link>
           </div>
         ) : null}

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useParams } from "next/navigation";
+import { PdfImportButton } from "@/components/pdf/PdfImportButton";
 import { AppShell } from "@/components/layout/AppShell";
 import { EditableName } from "@/components/library/EditableName";
 import { PageList } from "@/components/library/PageList";
@@ -35,12 +35,9 @@ export default function NotebookPage() {
       title={notebook.name}
       backHref={`/library/${folder.id}`}
       trailing={
-        <Link
-          href="/quick-start"
-          className="inline-flex min-h-11 items-center rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-500"
-        >
+        <PdfImportButton className="inline-flex min-h-11 items-center rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50">
           Import PDF
-        </Link>
+        </PdfImportButton>
       }
     >
       <div className="mb-6">

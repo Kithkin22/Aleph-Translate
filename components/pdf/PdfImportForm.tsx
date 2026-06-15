@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { defaultPdfTitle, PdfImportError, readPdfFile } from "@/lib/pdf/import";
 
 interface PdfImportFormProps {
@@ -21,6 +21,11 @@ export function PdfImportForm({ busy, onImport, hint }: PdfImportFormProps) {
   const [name, setName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => inputRef.current?.click(), 400);
+    return () => clearTimeout(timer);
+  }, []);
 
   async function handleSubmit() {
     if (!file) {
