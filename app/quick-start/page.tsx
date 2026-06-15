@@ -3,52 +3,51 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
-import { NewChapterForm } from "@/components/translation/NewChapterForm";
+import { PdfImportForm } from "@/components/pdf/PdfImportForm";
 import { useLibraryInit } from "@/hooks/useLibraryInit";
-import { createQuickStartPage, pagePath } from "@/lib/library/storage";
-import { defaultTitle, parseVerses } from "@/lib/text/parseVerses";
+import { createQuickStartPdf, pagePath } from "@/lib/library/storage";
 
 export default function QuickStartPage() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [chapterName, setChapterName] = useState("");
   const ready = useLibraryInit();
 
-  function handleStart(text: string) {
+  async function handleImport(input: {
+    title: string;
+    fileName: string;
+    pageCount: number;
+    buffer: ArrayBuffer;
+  }) {
     setBusy(true);
     try {
-      const parsed = parseVerses(text);
-      const title = defaultTitle(parsed, text);
-      const page = createQuickStartPage({
-        name: chapterName.trim() || title,
-        title,
-        sourceLanguage: parsed.sourceLanguage,
-        verses: parsed.verses,
-        passageRef: parsed.passageRef,
+      const page = await createQuickStartPdf({
+        name: input.title,
+        title: input.title,
+        fileName: input.fileName,
+        pageCount: input.pageCount,
+        pdfBuffer: input.buffer,
       });
       router.push(pagePath(page));
     } catch {
       setBusy(false);
-      alert("Could not save chapter. Your browser storage may be full.");
+      alert("Could not save PDF. Your browser storage may be full.");
     }
   }
 
   if (!ready) {
     return (
-      <AppShell title="New Chapter" backHref="/">
+      <AppShell title="Import PDF" backHref="/">
         <p className="text-stone-500">Loading…</p>
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="New Chapter" backHref="/">
-      <NewChapterForm
+    <AppShell title="Import PDF" backHref="/">
+      <PdfImportForm
         busy={busy}
-        chapterName={chapterName}
-        onChapterNameChange={setChapterName}
-        onStart={handleStart}
-        hint="Paste your text and start translating right away. You can assign a folder and notebook later from the workspace."
+        onImport={handleImport}
+        hint="Import a translation assignment PDF. It will open in the translate workspace right away. You can file it into a folder later."
       />
     </AppShell>
   );

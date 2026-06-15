@@ -4,7 +4,43 @@
  */
 
 import type { Page, PageCompletion } from "@/lib/library/types";
+import type { InkDocument } from "@/lib/ink/types";
 import type { Verse } from "@/lib/types/project";
+
+export function computePdfCompletion(
+  pdf: Page["pdf"],
+  ink?: InkDocument,
+): PageCompletion {
+  const totalPages = pdf?.pageCount ?? 0;
+  if (totalPages === 0) {
+    return {
+      status: "not_started",
+      translatedCount: 0,
+      totalVerses: 0,
+      percent: 0,
+    };
+  }
+
+  const inkPages = ink?.pages ?? {};
+  const inkedCount = Object.values(inkPages).filter(
+    (p) => p.strokes.length > 0,
+  ).length;
+  const percent = Math.min(100, Math.floor((inkedCount / totalPages) * 100));
+
+  let status: PageCompletion["status"] = "not_started";
+  if (inkedCount >= totalPages) {
+    status = "complete";
+  } else if (inkedCount > 0) {
+    status = "in_progress";
+  }
+
+  return {
+    status,
+    translatedCount: inkedCount,
+    totalVerses: totalPages,
+    percent,
+  };
+}
 
 export function computeCompletionFromVerses(verses: Verse[]): PageCompletion {
   const totalVerses = verses.length;
@@ -32,7 +68,12 @@ export function computeCompletionFromVerses(verses: Verse[]): PageCompletion {
   return { status, translatedCount, totalVerses, percent };
 }
 
-export function computePageCompletion(page: Pick<Page, "verses">): PageCompletion {
+export function computePageCompletion(
+  page: Pick<Page, "verses"> & Partial<Pick<Page, "contentKind" | "pdf" | "ink">>,
+): PageCompletion {
+  if (page.contentKind === "pdf") {
+    return computePdfCompletion(page.pdf, page.ink);
+  }
   return computeCompletionFromVerses(page.verses);
 }
 

@@ -36,10 +36,10 @@ export default function NotebookPage() {
       backHref={`/library/${folder.id}`}
       trailing={
         <Link
-          href={`/library/${folder.id}/${notebook.id}/new`}
-          className="inline-flex min-h-11 items-center rounded-xl bg-amber-600 px-3 text-sm font-semibold text-white hover:bg-amber-500"
+          href="/quick-start"
+          className="inline-flex min-h-11 items-center rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-500"
         >
-          Add Chapter
+          Import PDF
         </Link>
       }
     >
@@ -51,7 +51,7 @@ export default function NotebookPage() {
           ariaLabel="Notebook name"
         />
         <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
-          {folder.name} · tap a chapter to translate
+          {folder.name} · tap a document to translate
         </p>
       </div>
       <PageList folderId={folder.id} notebookId={notebook.id} />

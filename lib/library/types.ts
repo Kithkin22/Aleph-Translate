@@ -5,7 +5,7 @@
  */
 
 import type { FolderColorId, NotebookPaper } from "@/lib/library/appearance";
-import type { InkDocument } from "@/lib/ink/types";
+import type { InkDocument, WritingDirection } from "@/lib/ink/types";
 import type { SourceLanguage, Verse } from "@/lib/types/project";
 
 export type FolderId = string;
@@ -67,11 +67,14 @@ export interface PageIndexEntry {
   completion: PageCompletion;
 }
 
-/** Future PDF attachment — see PDF_ANNOTATOR.md */
+/** PDF attachment for translation workspace */
 export interface PdfPageRef {
   fileName: string;
   pageCount: number;
   blobKey: string;
+  writingDirection?: WritingDirection;
+  /** Last viewed page (1-based) for resume */
+  currentPage?: number;
 }
 
 /** Full page content (successor to TranslationProject) */

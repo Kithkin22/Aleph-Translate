@@ -51,15 +51,15 @@ export function PageList({ folderId, notebookId }: PageListProps) {
   if (pages.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-8 text-center dark:border-stone-700 dark:bg-stone-900">
-        <p className="font-medium">No chapters yet</p>
+        <p className="font-medium">No documents yet</p>
         <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
-          Add a chapter to start translating.
+          Import a PDF to start translating.
         </p>
         <Link
-          href={`/library/${folderId}/${notebookId}/new`}
-          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-xl bg-amber-600 px-6 font-semibold text-white hover:bg-amber-500"
+          href="/quick-start"
+          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-xl bg-blue-600 px-6 font-semibold text-white hover:bg-blue-500"
         >
-          Add Chapter
+          Import PDF
         </Link>
       </div>
     );
@@ -77,6 +77,7 @@ export function PageList({ folderId, notebookId }: PageListProps) {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-lg font-semibold">{page.name}</p>
                 <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                  {page.contentKind === "pdf" ? "PDF · " : ""}
                   {formatRelativeTime(page.updatedAt)}
                 </p>
               </div>

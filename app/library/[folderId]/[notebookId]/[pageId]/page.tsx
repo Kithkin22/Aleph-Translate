@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -14,6 +15,18 @@ import { useLibraryInit } from "@/hooks/useLibraryInit";
 import { getNotebook, isPageInInbox, setLastLocation } from "@/lib/library/storage";
 import type { Page } from "@/lib/library/types";
 
+const PdfWorkspace = dynamic(
+  () => import("@/components/pdf/PdfWorkspace").then((m) => m.PdfWorkspace),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-dvh items-center justify-center bg-white text-gray-500">
+        Loading translate workspace…
+      </div>
+    ),
+  },
+);
+
 export default function PageWorkspace() {
   const params = useParams<{ folderId: string; notebookId: string; pageId: string }>();
   const router = useRouter();
@@ -21,11 +34,13 @@ export default function PageWorkspace() {
   const { status, scheduleSave } = useAutosave(page);
   const libraryReady = useLibraryInit();
 
+  const backHref = `/library/${params.folderId}/${params.notebookId}`;
+
   useEffect(() => {
     if (libraryReady && !loading && missing) {
-      router.replace(`/library/${params.folderId}/${params.notebookId}`);
+      router.replace(backHref);
     }
-  }, [libraryReady, loading, missing, router, params.folderId, params.notebookId]);
+  }, [libraryReady, loading, missing, router, backHref]);
 
   useEffect(() => {
     if (!page) return;
@@ -51,16 +66,26 @@ export default function PageWorkspace() {
 
   if (loading || !page) {
     return (
-      <AppShell title="Chapter" backHref={`/library/${params.folderId}/${params.notebookId}`}>
+      <AppShell title="Document" backHref={backHref}>
         <p className="text-stone-500">Loading…</p>
       </AppShell>
+    );
+  }
+
+  if (page.contentKind === "pdf") {
+    return (
+      <PdfWorkspace
+        page={page}
+        backHref={backHref}
+        onPageChange={updatePage}
+      />
     );
   }
 
   return (
     <AppShell
       title={page.name}
-      backHref={`/library/${page.folderId}/${page.notebookId}`}
+      backHref={backHref}
       trailing={<WorkspaceToolbar status={status} />}
     >
       <PageOrganizer page={page} />

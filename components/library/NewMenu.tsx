@@ -160,7 +160,7 @@ export function NewMenu({ context, folderId }: NewMenuProps) {
     {
       id: "quick",
       label: "Quick",
-      description: "Start translating now",
+      description: "Import a PDF now",
       icon: "✦",
       onClick: () => {
         setMenuOpen(false);

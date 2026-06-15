@@ -8,6 +8,7 @@ import {
   projectKey,
   PROJECTS_INDEX_KEY,
 } from "@/lib/storage/keys";
+import { deleteBlob, pdfBlobKey, putBlob } from "@/lib/storage/indexedDb";
 import { computePageCompletion } from "@/lib/library/completion";
 import {
   DEFAULT_FOLDER_COLOR,
@@ -31,8 +32,17 @@ import {
   INBOX_NOTEBOOK_NAME,
 } from "@/lib/library/types";
 import type { ProjectIndexEntry, TranslationProject } from "@/lib/types/project";
+import { defaultWritingDirection, type WritingDirection } from "@/lib/ink/types";
 
 const STORAGE_EVENT = "aleph-storage-change";
+
+function removePageStorage(pageId: PageId): void {
+  const page = getPage(pageId);
+  localStorage.removeItem(pageKey(pageId));
+  if (page?.contentKind === "pdf" && page.pdf?.blobKey) {
+    void deleteBlob(page.pdf.blobKey).catch(() => {});
+  }
+}
 
 export function notifyStorageChange(): void {
   if (typeof window !== "undefined") {
@@ -425,7 +435,7 @@ export function deleteFolder(id: FolderId): void {
     .map((p) => p.id);
 
   for (const pageId of pageIds) {
-    localStorage.removeItem(pageKey(pageId));
+    removePageStorage(pageId);
   }
   writePagesIndex(readPagesIndex().filter((p) => p.folderId !== id));
   writeNotebooks(readNotebooks().filter((n) => n.folderId !== id));
@@ -517,7 +527,7 @@ export function deleteNotebook(id: NotebookId): void {
     .filter((p) => p.notebookId === id)
     .map((p) => p.id);
   for (const pageId of pageIds) {
-    localStorage.removeItem(pageKey(pageId));
+    removePageStorage(pageId);
   }
   writePagesIndex(readPagesIndex().filter((p) => p.notebookId !== id));
   writeNotebooks(notebooks.filter((n) => n.id !== id));
@@ -620,7 +630,7 @@ export function savePageSafe(page: Page): void {
 }
 
 export function deletePage(id: PageId): void {
-  localStorage.removeItem(pageKey(id));
+  removePageStorage(id);
   writePagesIndex(readPagesIndex().filter((e) => e.id !== id));
 
   const library = ensureLibrary();
@@ -705,6 +715,88 @@ export function createQuickStartPage(input: QuickStartInput): Page {
     sourceLanguage: input.sourceLanguage,
     verses: input.verses,
     passageRef: input.passageRef,
+  });
+}
+
+export interface CreatePdfPageInput {
+  folderId: FolderId;
+  notebookId: NotebookId;
+  name: string;
+  title: string;
+  fileName: string;
+  pageCount: number;
+  pdfBuffer: ArrayBuffer;
+  sourceLanguage?: Page["sourceLanguage"];
+  writingDirection?: WritingDirection;
+}
+
+/** Import a PDF into a notebook and persist the blob in IndexedDB. */
+export async function createPdfPage(input: CreatePdfPageInput): Promise<Page> {
+  const ts = now();
+  const id = newId();
+  const blobKey = pdfBlobKey(id);
+  await putBlob(blobKey, input.pdfBuffer);
+
+  const sourceLanguage = input.sourceLanguage ?? "unknown";
+  const writingDirection =
+    input.writingDirection ?? defaultWritingDirection(sourceLanguage);
+  const sortOrder = listPages(input.notebookId).length;
+
+  const page: Page = {
+    id,
+    notebookId: input.notebookId,
+    folderId: input.folderId,
+    name: input.name.trim() || input.title,
+    sortOrder,
+    contentKind: "pdf",
+    sourceLanguage,
+    createdAt: ts,
+    updatedAt: ts,
+    title: input.title,
+    verses: [],
+    pdf: {
+      fileName: input.fileName,
+      pageCount: input.pageCount,
+      blobKey,
+      writingDirection,
+      currentPage: 1,
+    },
+    ink: { version: 1, pages: {} },
+    completion: computePageCompletion({
+      contentKind: "pdf",
+      verses: [],
+      pdf: { fileName: input.fileName, pageCount: input.pageCount, blobKey },
+      ink: { version: 1, pages: {} },
+    }),
+  };
+
+  savePage(page);
+  return page;
+}
+
+export interface QuickStartPdfInput {
+  name?: string;
+  title: string;
+  fileName: string;
+  pageCount: number;
+  pdfBuffer: ArrayBuffer;
+  sourceLanguage?: Page["sourceLanguage"];
+  writingDirection?: WritingDirection;
+}
+
+/** Import a PDF into the Inbox — file into a folder/notebook later. */
+export async function createQuickStartPdf(input: QuickStartPdfInput): Promise<Page> {
+  const inbox = getInbox();
+  return createPdfPage({
+    folderId: inbox.folderId,
+    notebookId: inbox.notebookId,
+    name: input.name?.trim() || input.title,
+    title: input.title,
+    fileName: input.fileName,
+    pageCount: input.pageCount,
+    pdfBuffer: input.pdfBuffer,
+    sourceLanguage: input.sourceLanguage,
+    writingDirection: input.writingDirection,
   });
 }
 
