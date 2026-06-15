@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { WorkspaceFolderIcon } from "@/components/workspace/WorkspaceFolderIcon";
+import { FolderCard } from "@/components/library/FolderCard";
 import type { WorkspaceFolderSummary } from "@/lib/library/workspaceData";
 
 interface FolderSummaryGridProps {
@@ -19,22 +19,16 @@ export function FolderSummaryGrid({ folders }: FolderSummaryGridProps) {
           to organize your translations.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {folders.map((folder) => (
-            <Link
+            <FolderCard
               key={folder.id}
               href={`/library/${folder.id}`}
-              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3.5 transition hover:border-gray-300 hover:shadow-sm"
-            >
-              <WorkspaceFolderIcon colorId={folder.color} size={28} />
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900">{folder.name}</p>
-                <p className="text-sm text-gray-500">
-                  {folder.documentCount}{" "}
-                  {folder.documentCount === 1 ? "document" : "documents"}
-                </p>
-              </div>
-            </Link>
+              name={folder.name}
+              notebookCount={folder.notebookCount}
+              updatedAt={folder.updatedAt}
+              colorId={folder.color}
+            />
           ))}
         </div>
       )}

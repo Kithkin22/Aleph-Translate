@@ -16,9 +16,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useState } from "react";
-import { LibraryGridItem } from "@/components/library/LibraryGridItem";
-import { MacFolderIcon } from "@/components/library/MacFolderIcon";
+import { FolderCard } from "@/components/library/FolderCard";
 import {
+  countNotebooksInFolder,
   listFolders,
   reorderFolders,
   subscribeStorage,
@@ -35,18 +35,19 @@ function SortableFolder({ folder }: { folder: FolderMeta }) {
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.85 : 1,
+        opacity: isDragging ? 0.88 : 1,
+        zIndex: isDragging ? 10 : undefined,
       }}
       {...(folder.isInbox ? {} : { ...attributes, ...listeners })}
       className={folder.isInbox ? "" : "touch-none cursor-grab active:cursor-grabbing"}
     >
-      <LibraryGridItem
+      <FolderCard
         href={`/library/${folder.id}`}
         name={folder.name}
+        notebookCount={countNotebooksInFolder(folder.id)}
         updatedAt={folder.updatedAt}
-      >
-        <MacFolderIcon colorId={folder.color} size={100} />
-      </LibraryGridItem>
+        colorId={folder.color}
+      />
     </li>
   );
 }
@@ -84,8 +85,8 @@ export function FolderGrid() {
 
   if (folders.length === 0) {
     return (
-      <p className="py-12 text-center text-stone-500">
-        Tap <span className="font-semibold text-sky-500">+ New</span> to add a folder or import a
+      <p className="py-12 text-center text-stone-500 dark:text-stone-400">
+        Tap <span className="font-semibold text-blue-600">+ New</span> to add a folder or import a
         PDF.
       </p>
     );
@@ -94,7 +95,7 @@ export function FolderGrid() {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={sortableIds} strategy={rectSortingStrategy}>
-        <ul className="grid grid-cols-2 gap-x-2 gap-y-6 sm:grid-cols-3 md:grid-cols-4">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
           {folders.map((folder) => (
             <SortableFolder key={folder.id} folder={folder} />
           ))}

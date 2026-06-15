@@ -584,6 +584,10 @@ export function countPagesInFolder(folderId: FolderId): number {
   return readPagesIndex().filter((p) => p.folderId === folderId).length;
 }
 
+export function countNotebooksInFolder(folderId: FolderId): number {
+  return readNotebooks().filter((n) => n.folderId === folderId).length;
+}
+
 export function getPage(id: PageId): Page | null {
   if (typeof window === "undefined") return null;
   return readJson<Page | null>(pageKey(id), null);

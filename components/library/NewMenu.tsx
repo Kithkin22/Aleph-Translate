@@ -73,7 +73,7 @@ export function CreateItemSheet({ kind, folderId, open, onClose }: CreateItemShe
 
         <div className="my-6 flex justify-center">
           {kind === "folder" ? (
-            <MacFolderIcon colorId={color} size={110} />
+            <MacFolderIcon colorId={color} size={140} />
           ) : (
             <GoodNotesNotebookIcon paper={paper} size={100} />
           )}

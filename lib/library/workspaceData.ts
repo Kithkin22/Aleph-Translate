@@ -1,5 +1,6 @@
 import type { FolderMeta, PageIndexEntry } from "@/lib/library/types";
 import {
+  countNotebooksInFolder,
   countPagesInFolder,
   ensureLibrary,
   getLastLocation,
@@ -21,6 +22,7 @@ export interface WorkspaceDocument {
 
 export interface WorkspaceFolderSummary extends FolderMeta {
   documentCount: number;
+  notebookCount: number;
 }
 
 export interface WorkspaceSnapshot {
@@ -70,6 +72,7 @@ export function getWorkspaceSnapshot(): WorkspaceSnapshot {
     .map((folder) => ({
       ...folder,
       documentCount: countPagesInFolder(folder.id),
+      notebookCount: countNotebooksInFolder(folder.id),
     }));
 
   return {
