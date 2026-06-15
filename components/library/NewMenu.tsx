@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ColorSwatches } from "@/components/library/ColorSwatches";
-import { GoodNotesFolderIcon } from "@/components/library/GoodNotesFolderIcon";
+import { MacFolderIcon } from "@/components/library/MacFolderIcon";
 import { GoodNotesNotebookIcon } from "@/components/library/GoodNotesNotebookIcon";
 import { PaperSwatches } from "@/components/library/PaperSwatches";
 import {
@@ -73,7 +73,7 @@ export function CreateItemSheet({ kind, folderId, open, onClose }: CreateItemShe
 
         <div className="my-6 flex justify-center">
           {kind === "folder" ? (
-            <GoodNotesFolderIcon colorId={color} size={110} />
+            <MacFolderIcon colorId={color} size={110} />
           ) : (
             <GoodNotesNotebookIcon paper={paper} size={100} />
           )}

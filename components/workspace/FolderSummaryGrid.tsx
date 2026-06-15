@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { WorkspaceFolderIcon } from "@/components/workspace/WorkspaceIcons";
+import { WorkspaceFolderIcon } from "@/components/workspace/WorkspaceFolderIcon";
 import type { WorkspaceFolderSummary } from "@/lib/library/workspaceData";
 
 interface FolderSummaryGridProps {
@@ -26,7 +26,7 @@ export function FolderSummaryGrid({ folders }: FolderSummaryGridProps) {
               href={`/library/${folder.id}`}
               className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3.5 transition hover:border-gray-300 hover:shadow-sm"
             >
-              <WorkspaceFolderIcon />
+              <WorkspaceFolderIcon colorId={folder.color} size={28} />
               <div className="min-w-0">
                 <p className="font-medium text-gray-900">{folder.name}</p>
                 <p className="text-sm text-gray-500">

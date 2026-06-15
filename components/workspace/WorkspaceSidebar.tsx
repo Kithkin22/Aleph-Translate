@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { WorkspaceFolderSummary } from "@/lib/library/workspaceData";
+import { WorkspaceFolderIcon } from "@/components/workspace/WorkspaceFolderIcon";
 import {
   IconClock,
   IconDocuments,
@@ -10,7 +11,6 @@ import {
   IconSettings,
   IconStar,
   IconTrash,
-  WorkspaceFolderIcon,
 } from "@/components/workspace/WorkspaceIcons";
 
 interface WorkspaceSidebarProps {
@@ -124,7 +124,7 @@ export function WorkspaceSidebar({ folderCounts, counts }: WorkspaceSidebarProps
               href={`/library/${folder.id}`}
               className="flex min-h-9 items-center gap-2.5 rounded-md px-2.5 text-sm text-gray-700 hover:bg-gray-100"
             >
-              <WorkspaceFolderIcon />
+              <WorkspaceFolderIcon colorId={folder.color} size={20} />
               <span className="flex-1 truncate">{folder.name}</span>
               <span className="text-xs tabular-nums text-gray-400">
                 {folder.documentCount}

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { GoodNotesFolderIcon } from "@/components/library/GoodNotesFolderIcon";
 import { GoodNotesNotebookIcon } from "@/components/library/GoodNotesNotebookIcon";
 import { formatRelativeTime } from "@/lib/library/formatTime";
 
@@ -45,4 +44,4 @@ export function LibraryGridItem({ href, name, updatedAt, children }: LibraryGrid
   );
 }
 
-export { GoodNotesFolderIcon, GoodNotesNotebookIcon };
+export { GoodNotesNotebookIcon } from "@/components/library/GoodNotesNotebookIcon";

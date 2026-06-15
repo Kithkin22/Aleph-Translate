@@ -1,29 +1,3 @@
-/** Small blue folder icon for sidebar and folder cards. */
-export function WorkspaceFolderIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      width="18"
-      height="16"
-      viewBox="0 0 18 16"
-      fill="none"
-      className={className}
-      aria-hidden
-    >
-      <path
-        d="M2 5V4.2C2 3.5 2.5 3 3.2 3H6.2C6.5 3 6.8 2.8 7 2.5L7.4 2H13.8C14.5 2 15 2.5 15 3.2V5M2 5H16V13.2C16 14 15.4 14.5 14.6 14.5H3.4C2.6 14.5 2 14 2 13.2V5Z"
-        stroke="#2563EB"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M1.5 5.5H16.5V13.5C16.5 14.3 15.9 14.8 15.1 14.8H2.9C2.1 14.8 1.5 14.3 1.5 13.5V5.5Z"
-        fill="#3B82F6"
-        fillOpacity="0.15"
-      />
-    </svg>
-  );
-}
-
 export function IconOverview({ className = "" }: { className?: string }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className={className} aria-hidden>

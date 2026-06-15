@@ -1,4 +1,4 @@
-/** Folder colors — two-tone front/back with depth bar (outlined folder style). */
+/** Folder colors — macOS Finder–style gradient tints. */
 
 export const FOLDER_COLORS = {
   purple: { label: "Purple", front: "#C9B3F5", back: "#7B4FD4", depth: "#5B38A8" },
@@ -22,7 +22,7 @@ export const NOTEBOOK_PAPERS = {
 
 export type NotebookPaper = keyof typeof NOTEBOOK_PAPERS;
 
-export const DEFAULT_FOLDER_COLOR: FolderColorId = "purple";
+export const DEFAULT_FOLDER_COLOR: FolderColorId = "blue";
 export const DEFAULT_NOTEBOOK_PAPER: NotebookPaper = "white";
 
 export function folderColor(id: FolderColorId | undefined) {

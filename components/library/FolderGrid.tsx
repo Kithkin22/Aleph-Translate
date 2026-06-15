@@ -16,10 +16,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useState } from "react";
-import {
-  GoodNotesFolderIcon,
-  LibraryGridItem,
-} from "@/components/library/LibraryGridItem";
+import { LibraryGridItem } from "@/components/library/LibraryGridItem";
+import { MacFolderIcon } from "@/components/library/MacFolderIcon";
 import {
   listFolders,
   reorderFolders,
@@ -47,7 +45,7 @@ function SortableFolder({ folder }: { folder: FolderMeta }) {
         name={folder.name}
         updatedAt={folder.updatedAt}
       >
-        <GoodNotesFolderIcon colorId={folder.color} size={100} />
+        <MacFolderIcon colorId={folder.color} size={100} />
       </LibraryGridItem>
     </li>
   );
