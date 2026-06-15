@@ -223,17 +223,21 @@ export function ensureLibrary(): Library {
     return { version: 1, folders: [] };
   }
 
-  let library = readLibraryRoot();
-  if (!library) {
-    library = { version: 1, folders: seedDefaultFolders() };
-    writeLibraryRoot(library);
-    writeNotebooks([]);
-    writePagesIndex([]);
-  }
+  try {
+    let library = readLibraryRoot();
+    if (!library) {
+      library = { version: 1, folders: seedDefaultFolders() };
+      writeLibraryRoot(library);
+      writeNotebooks([]);
+      writePagesIndex([]);
+    }
 
-  migrateLegacyProjects();
-  ensureInbox();
-  return readLibraryRoot()!;
+    migrateLegacyProjects();
+    ensureInbox();
+    return readLibraryRoot() ?? { version: 1, folders: [] };
+  } catch {
+    return { version: 1, folders: [] };
+  }
 }
 
 function ensureInbox(): { folderId: FolderId; notebookId: NotebookId } {

@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { EditableName } from "@/components/library/EditableName";
 import {
   createNotebook,
@@ -29,7 +29,6 @@ import {
   subscribeStorage,
 } from "@/lib/library/storage";
 import type { FolderId, NotebookMeta } from "@/lib/library/types";
-import { useSyncExternalStore } from "react";
 
 interface NotebookListProps {
   folderId: FolderId;
@@ -105,12 +104,20 @@ function SortableNotebookRow({
 }
 
 export function NotebookList({ folderId }: NotebookListProps) {
-  const getSnapshot = useMemo(
-    () => () => listNotebooks(folderId),
-    [folderId],
-  );
-  const notebooks = useSyncExternalStore(subscribeStorage, getSnapshot, () => []);
+  const [notebooks, setNotebooks] = useState<NotebookMeta[]>([]);
   const [newName, setNewName] = useState("");
+
+  useEffect(() => {
+    function refresh() {
+      try {
+        setNotebooks(listNotebooks(folderId));
+      } catch {
+        setNotebooks([]);
+      }
+    }
+    refresh();
+    return subscribeStorage(refresh);
+  }, [folderId]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),

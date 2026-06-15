@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { HomeActions } from "@/components/home/HomeActions";
 import {
@@ -12,26 +11,51 @@ import {
   subscribeStorage,
 } from "@/lib/library/storage";
 
-function getContinue() {
-  const path = lastLocationPath();
-  if (!path) return null;
-  const loc = getLastLocation();
-  if (!loc) return null;
-  const page = getPage(loc.pageId);
-  if (!page) return null;
-  return { href: path, label: `${page.name}` };
+interface ContinueTarget {
+  href: string;
+  label: string;
+}
+
+function readContinueTarget(): ContinueTarget | null {
+  try {
+    const path = lastLocationPath();
+    if (!path) return null;
+    const loc = getLastLocation();
+    if (!loc) return null;
+    const page = getPage(loc.pageId);
+    if (!page) return null;
+    return { href: path, label: page.name };
+  } catch {
+    return null;
+  }
 }
 
 export default function HomePage() {
+  const [continueTarget, setContinueTarget] = useState<ContinueTarget | null>(null);
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
-    ensureLibrary();
+    function refresh() {
+      try {
+        ensureLibrary();
+        setContinueTarget(readContinueTarget());
+      } catch {
+        setContinueTarget(null);
+      }
+    }
+    refresh();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount gate for localStorage
+    setReady(true);
+    return subscribeStorage(refresh);
   }, []);
 
-  const continueTarget = useSyncExternalStore(
-    subscribeStorage,
-    getContinue,
-    () => null,
-  );
+  if (!ready) {
+    return (
+      <AppShell>
+        <p className="text-stone-500">Loading…</p>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>

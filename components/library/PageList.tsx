@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
-import { useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { CompletionBadge } from "@/components/library/CompletionBadge";
 import {
   deletePage,
@@ -10,7 +9,7 @@ import {
   pagePath,
   subscribeStorage,
 } from "@/lib/library/storage";
-import type { NotebookId } from "@/lib/library/types";
+import type { NotebookId, PageIndexEntry } from "@/lib/library/types";
 
 interface PageListProps {
   folderId: string;
@@ -30,11 +29,19 @@ function formatRelativeTime(iso: string): string {
 }
 
 export function PageList({ folderId, notebookId }: PageListProps) {
-  const getSnapshot = useMemo(
-    () => () => listPages(notebookId),
-    [notebookId],
-  );
-  const pages = useSyncExternalStore(subscribeStorage, getSnapshot, () => []);
+  const [pages, setPages] = useState<PageIndexEntry[]>([]);
+
+  useEffect(() => {
+    function refresh() {
+      try {
+        setPages(listPages(notebookId));
+      } catch {
+        setPages([]);
+      }
+    }
+    refresh();
+    return subscribeStorage(refresh);
+  }, [notebookId]);
 
   function handleDelete(id: string, name: string) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
