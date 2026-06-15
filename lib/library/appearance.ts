@@ -1,14 +1,14 @@
-/** Folder colors — two-tone front/back with depth bar (outlined folder style). */
+/** Folder colors — GoodNotes / Mac-style two-tone folders. */
 
 export const FOLDER_COLORS = {
-  purple: { label: "Purple", front: "#C9B3F5", back: "#7B4FD4", depth: "#5B38A8" },
-  blue: { label: "Blue", front: "#9DC8FA", back: "#4A8AD4", depth: "#3568B0" },
-  cyan: { label: "Cyan", front: "#8EEDED", back: "#3BB8B8", depth: "#2A9494" },
-  green: { label: "Green", front: "#9EE0A3", back: "#4AAF50", depth: "#388A3C" },
-  yellow: { label: "Yellow", front: "#F5E08A", back: "#D4AD2A", depth: "#B08E1E" },
-  orange: { label: "Orange", front: "#F5C49A", back: "#E07A30", depth: "#B85E20" },
-  red: { label: "Red", front: "#F5A0A0", back: "#D44A4A", depth: "#B03838" },
-  gray: { label: "Gray", front: "#D4D4D4", back: "#9A9A9A", depth: "#787878" },
+  purple: { label: "Purple", front: "#D4C0F5", back: "#8B5FD4", depth: "#6A42B5" },
+  blue: { label: "Blue", front: "#A8D4FF", back: "#4F94E8", depth: "#3A76C4" },
+  cyan: { label: "Cyan", front: "#96EAEA", back: "#3DB8B8", depth: "#2A9494" },
+  green: { label: "Green", front: "#A8E6AC", back: "#4CAF50", depth: "#388E3C" },
+  yellow: { label: "Yellow", front: "#F5E6A3", back: "#D4AF37", depth: "#B8942E" },
+  orange: { label: "Orange", front: "#F5C99A", back: "#E8873A", depth: "#C46A28" },
+  red: { label: "Red", front: "#F5A8A8", back: "#E05252", depth: "#C03838" },
+  gray: { label: "Gray", front: "#D8D8D8", back: "#A0A0A0", depth: "#808080" },
 } as const;
 
 export type FolderColorId = keyof typeof FOLDER_COLORS;
