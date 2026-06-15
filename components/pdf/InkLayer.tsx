@@ -208,6 +208,7 @@ export function FocusRectOverlay({
         border: `2px solid ${FOCUS_RECT_COLOR}`,
         borderRadius: 2,
         boxShadow: `0 0 0 1px ${FOCUS_RECT_COLOR}33`,
+        transition: "left 0.22s ease, top 0.22s ease",
         cursor: "move",
       }}
       onPointerDown={onPointerDown}

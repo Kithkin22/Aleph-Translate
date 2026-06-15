@@ -251,7 +251,7 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
   function handleNudge(direction: "left" | "right") {
     const focus = focusByPage[currentPage];
     if (!focus) return;
-    const step = focus.rect.w * 0.5;
+    const step = focus.rect.w * 0.7;
     const nextRect =
       direction === "left"
         ? { ...focus.rect, x: Math.max(0, focus.rect.x - step) }
@@ -335,6 +335,7 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
           tool={tool}
           focusByPage={focusByPage}
           showFocus={zoomLaneEnabled}
+          zoomLaneWritesOnly={zoomLaneEnabled}
           focusScrollToken={focusScrollToken}
           onStroke={handleStroke}
           onStrokeBounds={handleStrokeBounds}

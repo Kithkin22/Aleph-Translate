@@ -24,6 +24,7 @@ interface PdfPageViewProps {
   tool: AnnotationTool;
   focus: FocusRegion | null;
   showFocus: boolean;
+  zoomLaneWritesOnly?: boolean;
   onStroke: (stroke: Stroke) => void;
   onStrokeBounds: (bounds: { x: number; y: number; w: number; h: number }) => void;
   onFocusDrag: (rect: FocusRegion["rect"]) => void;
@@ -36,6 +37,7 @@ function PdfPageView({
   tool,
   focus,
   showFocus,
+  zoomLaneWritesOnly = false,
   onStroke,
   onStrokeBounds,
   onFocusDrag,
@@ -63,7 +65,8 @@ function PdfPageView({
     };
   }, [pdf, pageNumber]);
 
-  const interactive = tool !== "pan";
+  const penOnPage = !zoomLaneWritesOnly || tool === "eraser" || tool === "highlighter";
+  const interactive = tool !== "pan" && penOnPage;
 
   return (
     <div className="relative mx-auto w-fit bg-white shadow-sm ring-1 ring-gray-200">
@@ -101,6 +104,7 @@ interface PdfViewerProps {
   tool: AnnotationTool;
   focusByPage: Record<number, FocusRegion>;
   showFocus: boolean;
+  zoomLaneWritesOnly?: boolean;
   onStroke: (stroke: Stroke) => void;
   onStrokeBounds: (page: number, bounds: { x: number; y: number; w: number; h: number }) => void;
   onFocusDrag: (page: number, rect: FocusRegion["rect"]) => void;
@@ -116,6 +120,7 @@ export function PdfViewer({
   tool,
   focusByPage,
   showFocus,
+  zoomLaneWritesOnly = false,
   onStroke,
   onStrokeBounds,
   onFocusDrag,
@@ -213,6 +218,7 @@ export function PdfViewer({
               tool={tool}
               focus={focusByPage[pageNumber] ?? null}
               showFocus={showFocus}
+              zoomLaneWritesOnly={zoomLaneWritesOnly}
               onStroke={onStroke}
               onStrokeBounds={(bounds) => onStrokeBounds(pageNumber, bounds)}
               onFocusDrag={(rect) => onFocusDrag(pageNumber, rect)}
