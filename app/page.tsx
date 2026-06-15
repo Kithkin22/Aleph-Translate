@@ -51,14 +51,14 @@ export default function HomePage() {
 
   if (!ready) {
     return (
-      <AppShell>
+      <AppShell showBack={false}>
         <p className="text-stone-500">Loading…</p>
       </AppShell>
     );
   }
 
   return (
-    <AppShell>
+    <AppShell showBack={false}>
       <div className="mb-8">
         <p className="text-sm font-medium uppercase tracking-wider text-amber-700 dark:text-amber-400">
           Aleph Translate 1.0
