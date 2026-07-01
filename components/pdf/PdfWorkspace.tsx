@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { PdfAnnotationToolbar, type AnnotationTool } from "@/components/pdf/PdfAnnotationToolbar";
 import { TranslateWorkspaceShell } from "@/components/pdf/TranslateWorkspaceShell";
-import { ExportForChatGptButton } from "@/components/export/ExportForChatGptButton";
 import { ZoomWritingLane } from "@/components/pdf/zoom/ZoomWritingLane";
 import { focusRectAtPoint } from "@/components/pdf/zoom/ZoomWritingWindow";
 import { useAutosave } from "@/hooks/useAutosave";
@@ -312,7 +311,6 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
       title={page.title}
       backHref={backHref}
       saveStatus={status}
-      headerTrailing={<ExportForChatGptButton page={page} pdfBlob={blob} compact />}
       toolbar={
         <PdfAnnotationToolbar
           tool={tool}
