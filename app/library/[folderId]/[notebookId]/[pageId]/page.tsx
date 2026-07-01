@@ -8,6 +8,7 @@ import { ChapterNav } from "@/components/library/ChapterNav";
 import { PageOrganizer } from "@/components/library/PageOrganizer";
 import { VerseBlock } from "@/components/translation/VerseBlock";
 import { WorkspaceToolbar } from "@/components/translation/WorkspaceToolbar";
+import { ExportForChatGptButton } from "@/components/export/ExportForChatGptButton";
 import { useAutosave } from "@/hooks/useAutosave";
 import { usePage } from "@/hooks/usePage";
 import { computePageCompletion } from "@/lib/library/completion";
@@ -86,7 +87,12 @@ export default function PageWorkspace() {
     <AppShell
       title={page.name}
       backHref={backHref}
-      trailing={<WorkspaceToolbar status={status} />}
+      trailing={
+        <>
+          <ExportForChatGptButton page={page} />
+          <WorkspaceToolbar status={status} />
+        </>
+      }
     >
       <PageOrganizer page={page} />
       {!inInbox ? <ChapterNav page={page} /> : null}

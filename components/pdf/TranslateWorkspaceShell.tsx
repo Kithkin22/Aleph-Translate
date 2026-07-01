@@ -8,6 +8,7 @@ interface TranslateWorkspaceShellProps {
   backHref: string;
   toolbar: React.ReactNode;
   saveStatus?: SaveStatus;
+  headerTrailing?: React.ReactNode;
   children: React.ReactNode;
   bottom?: React.ReactNode;
 }
@@ -30,6 +31,7 @@ export function TranslateWorkspaceShell({
   backHref,
   toolbar,
   saveStatus,
+  headerTrailing,
   children,
   bottom,
 }: TranslateWorkspaceShellProps) {
@@ -49,15 +51,18 @@ export function TranslateWorkspaceShell({
             </svg>
           </Link>
           <h1 className="min-w-0 flex-1 truncate text-[15px] font-semibold">{title}</h1>
-          {statusText ? (
-            <span
-              className={`text-xs tabular-nums ${
-                saveStatus === "error" ? "text-red-600" : "text-gray-400"
-              }`}
-            >
-              {statusText}
-            </span>
-          ) : null}
+          <div className="flex shrink-0 items-center gap-2">
+            {headerTrailing}
+            {statusText ? (
+              <span
+                className={`text-xs tabular-nums ${
+                  saveStatus === "error" ? "text-red-600" : "text-gray-400"
+                }`}
+              >
+                {statusText}
+              </span>
+            ) : null}
+          </div>
         </div>
         {toolbar}
       </header>
