@@ -5,6 +5,7 @@ import { getDocument, GlobalWorkerOptions, type PDFDocumentProxy } from "pdfjs-d
 import type { FocusRegion, Stroke } from "@/lib/ink/types";
 import { FocusRectOverlay, InkLayer } from "@/components/pdf/InkLayer";
 import type { AnnotationTool } from "@/components/pdf/PdfAnnotationToolbar";
+import { usePinchZoom } from "@/hooks/usePinchZoom";
 
 let workerReady = false;
 
@@ -24,10 +25,12 @@ interface PdfPageViewProps {
   tool: AnnotationTool;
   focus: FocusRegion | null;
   showFocus: boolean;
-  zoomLaneWritesOnly?: boolean;
+  zoomWindowMode: boolean;
+  allowDirectInk: boolean;
   onStroke: (stroke: Stroke) => void;
   onStrokeBounds: (bounds: { x: number; y: number; w: number; h: number }) => void;
   onFocusDrag: (rect: FocusRegion["rect"]) => void;
+  onTapPlaceFocus: (nx: number, ny: number) => void;
 }
 
 function PdfPageView({
@@ -37,10 +40,12 @@ function PdfPageView({
   tool,
   focus,
   showFocus,
-  zoomLaneWritesOnly = false,
+  zoomWindowMode,
+  allowDirectInk,
   onStroke,
   onStrokeBounds,
   onFocusDrag,
+  onTapPlaceFocus,
 }: PdfPageViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -65,8 +70,32 @@ function PdfPageView({
     };
   }, [pdf, pageNumber]);
 
-  const penOnPage = !zoomLaneWritesOnly || tool === "eraser" || tool === "highlighter";
+  const penOnPage = allowDirectInk && tool !== "pan";
   const interactive = tool !== "pan" && penOnPage;
+  const tapToPlace = zoomWindowMode && tool === "pen";
+  const tapStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  function handleTapPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (!tapToPlace) return;
+    tapStartRef.current = { x: e.clientX, y: e.clientY };
+  }
+
+  function handleTapPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    if (!tapToPlace || !tapStartRef.current) return;
+    const start = tapStartRef.current;
+    tapStartRef.current = null;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.hypot(dx, dy) > 14) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const bounds = canvas.getBoundingClientRect();
+    const nx = (e.clientX - bounds.left) / bounds.width;
+    const ny = (e.clientY - bounds.top) / bounds.height;
+    if (nx < 0 || nx > 1 || ny < 0 || ny > 1) return;
+    onTapPlaceFocus(nx, ny);
+  }
 
   return (
     <div className="relative mx-auto w-fit bg-white shadow-sm ring-1 ring-gray-200">
@@ -82,6 +111,17 @@ function PdfPageView({
             onStrokeComplete={(stroke) => onStroke({ ...stroke, page: pageNumber })}
             onStrokeBounds={onStrokeBounds}
           />
+          {tapToPlace ? (
+            <div
+              className="absolute inset-0 z-[8] cursor-crosshair touch-none"
+              onPointerDown={handleTapPointerDown}
+              onPointerUp={handleTapPointerUp}
+              onPointerCancel={() => {
+                tapStartRef.current = null;
+              }}
+              aria-label="Tap to place zoom writing window"
+            />
+          ) : null}
           {showFocus && focus ? (
             <FocusRectOverlay
               rect={focus.rect}
@@ -104,10 +144,12 @@ interface PdfViewerProps {
   tool: AnnotationTool;
   focusByPage: Record<number, FocusRegion>;
   showFocus: boolean;
-  zoomLaneWritesOnly?: boolean;
+  zoomWindowMode: boolean;
+  allowDirectInk: boolean;
   onStroke: (stroke: Stroke) => void;
   onStrokeBounds: (page: number, bounds: { x: number; y: number; w: number; h: number }) => void;
   onFocusDrag: (page: number, rect: FocusRegion["rect"]) => void;
+  onTapPlaceFocus: (page: number, nx: number, ny: number) => void;
   onPageVisible: (page: number) => void;
   focusScrollToken?: number;
 }
@@ -120,16 +162,27 @@ export function PdfViewer({
   tool,
   focusByPage,
   showFocus,
-  zoomLaneWritesOnly = false,
+  zoomWindowMode,
+  allowDirectInk,
   onStroke,
   onStrokeBounds,
   onFocusDrag,
+  onTapPlaceFocus,
   onPageVisible,
   focusScrollToken = 0,
 }: PdfViewerProps) {
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const {
+    transform,
+    resetZoom,
+    zoomIn,
+    zoomOut,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
+  } = usePinchZoom();
 
   useEffect(() => {
     let cancelled = false;
@@ -206,26 +259,71 @@ export function PdfViewer({
     );
   }
 
+  const panMode = tool === "pan" || transform.scale > 1;
+
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto bg-[#e8eaed] px-4 py-6">
-      <div className="mx-auto flex max-w-4xl flex-col gap-8">
-        {Array.from({ length: pageCount }, (_, i) => i + 1).map((pageNumber) => (
-          <div key={pageNumber} data-page={pageNumber}>
-            <PdfPageView
-              pdf={doc}
-              pageNumber={pageNumber}
-              strokes={strokesByPage[pageNumber] ?? []}
-              tool={tool}
-              focus={focusByPage[pageNumber] ?? null}
-              showFocus={showFocus}
-              zoomLaneWritesOnly={zoomLaneWritesOnly}
-              onStroke={onStroke}
-              onStrokeBounds={(bounds) => onStrokeBounds(pageNumber, bounds)}
-              onFocusDrag={(rect) => onFocusDrag(pageNumber, rect)}
-            />
-            <p className="mt-2 text-center text-xs text-gray-500">Page {pageNumber}</p>
-          </div>
-        ))}
+    <div className="relative h-full">
+      {/* PDF zoom controls */}
+      <div className="absolute right-3 top-3 z-20 flex flex-col gap-1 rounded-lg border border-gray-200 bg-white/95 p-1 shadow-md backdrop-blur-sm">
+        <button
+          type="button"
+          onClick={zoomIn}
+          className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-md text-lg font-medium text-gray-700 hover:bg-gray-100"
+          aria-label="Zoom in"
+        >
+          +
+        </button>
+        <button
+          type="button"
+          onClick={zoomOut}
+          className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-md text-lg font-medium text-gray-700 hover:bg-gray-100"
+          aria-label="Zoom out"
+        >
+          −
+        </button>
+        <button
+          type="button"
+          onClick={resetZoom}
+          className="inline-flex min-h-8 items-center justify-center rounded-md px-1.5 text-[10px] font-medium text-gray-500 hover:bg-gray-100"
+        >
+          {Math.round(transform.scale * 100)}%
+        </button>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className={`h-full overflow-auto bg-[#e8eaed] px-4 py-6 ${panMode ? "touch-pan-x touch-pan-y" : ""}`}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{ touchAction: panMode ? "none" : "pan-y pinch-zoom" }}
+      >
+        <div
+          className="mx-auto flex max-w-4xl origin-top flex-col gap-8 transition-transform duration-75"
+          style={{
+            transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
+          }}
+        >
+          {Array.from({ length: pageCount }, (_, i) => i + 1).map((pageNumber) => (
+            <div key={pageNumber} data-page={pageNumber}>
+              <PdfPageView
+                pdf={doc}
+                pageNumber={pageNumber}
+                strokes={strokesByPage[pageNumber] ?? []}
+                tool={tool}
+                focus={focusByPage[pageNumber] ?? null}
+                showFocus={showFocus}
+                zoomWindowMode={zoomWindowMode}
+                allowDirectInk={allowDirectInk}
+                onStroke={onStroke}
+                onStrokeBounds={(bounds) => onStrokeBounds(pageNumber, bounds)}
+                onFocusDrag={(rect) => onFocusDrag(pageNumber, rect)}
+                onTapPlaceFocus={(nx, ny) => onTapPlaceFocus(pageNumber, nx, ny)}
+              />
+              <p className="mt-2 text-center text-xs text-gray-500">Page {pageNumber}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

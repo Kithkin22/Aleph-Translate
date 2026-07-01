@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { PdfAnnotationToolbar, type AnnotationTool } from "@/components/pdf/PdfAnnotationToolbar";
 import { TranslateWorkspaceShell } from "@/components/pdf/TranslateWorkspaceShell";
+import { ExportForChatGptButton } from "@/components/export/ExportForChatGptButton";
 import { ZoomWritingLane } from "@/components/pdf/zoom/ZoomWritingLane";
+import { focusRectAtPoint } from "@/components/pdf/zoom/ZoomWritingWindow";
 import { useAutosave } from "@/hooks/useAutosave";
 import { defaultFocusRect } from "@/lib/ink/focusRect";
 import { createZoomLaneController } from "@/lib/ink/zoomLaneController";
@@ -260,6 +262,16 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
     setFocusScrollToken((t) => t + 1);
   }
 
+  function handleTapPlaceFocus(pageNum: number, nx: number, ny: number) {
+    if (!zoomLaneEnabled) return;
+    const existing = focusByPage[pageNum];
+    const size = existing?.rect ?? defaultFocusRect(writingDirection);
+    const nextRect = focusRectAtPoint(nx, ny, size);
+    setCurrentPage(pageNum);
+    handleFocusDrag(pageNum, nextRect);
+    setFocusScrollToken((t) => t + 1);
+  }
+
   // Keep page canvas in sync for zoom lane magnification
   useEffect(() => {
     function refreshCanvas() {
@@ -300,6 +312,7 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
       title={page.title}
       backHref={backHref}
       saveStatus={status}
+      headerTrailing={<ExportForChatGptButton page={page} pdfBlob={blob} compact />}
       toolbar={
         <PdfAnnotationToolbar
           tool={tool}
@@ -335,11 +348,13 @@ export function PdfWorkspace({ page, backHref, onPageChange }: PdfWorkspaceProps
           tool={tool}
           focusByPage={focusByPage}
           showFocus={zoomLaneEnabled}
-          zoomLaneWritesOnly={zoomLaneEnabled}
+          zoomWindowMode={zoomLaneEnabled}
+          allowDirectInk={!zoomLaneEnabled}
           focusScrollToken={focusScrollToken}
           onStroke={handleStroke}
           onStrokeBounds={handleStrokeBounds}
           onFocusDrag={handleFocusDrag}
+          onTapPlaceFocus={handleTapPlaceFocus}
           onPageVisible={setCurrentPage}
         />
       ) : (

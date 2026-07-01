@@ -8,6 +8,7 @@ interface TranslateWorkspaceShellProps {
   backHref: string;
   toolbar: React.ReactNode;
   saveStatus?: SaveStatus;
+  headerTrailing?: React.ReactNode;
   children: React.ReactNode;
   bottom?: React.ReactNode;
 }
@@ -30,14 +31,15 @@ export function TranslateWorkspaceShell({
   backHref,
   toolbar,
   saveStatus,
+  headerTrailing,
   children,
   bottom,
 }: TranslateWorkspaceShellProps) {
   const statusText = saveLabel(saveStatus);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#f8f9fa] text-gray-900">
-      <header className="shrink-0 border-b border-gray-200 bg-white pt-[env(safe-area-inset-top)]">
+    <div className="flex h-dvh flex-col overflow-hidden bg-[#f8f9fa] text-gray-900">
+      <header className="sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white pt-[env(safe-area-inset-top)] shadow-sm">
         <div className="flex h-12 items-center gap-2 px-3 md:px-4">
           <Link
             href={backHref}
@@ -49,15 +51,18 @@ export function TranslateWorkspaceShell({
             </svg>
           </Link>
           <h1 className="min-w-0 flex-1 truncate text-[15px] font-semibold">{title}</h1>
-          {statusText ? (
-            <span
-              className={`text-xs tabular-nums ${
-                saveStatus === "error" ? "text-red-600" : "text-gray-400"
-              }`}
-            >
-              {statusText}
-            </span>
-          ) : null}
+          <div className="flex shrink-0 items-center gap-2">
+            {headerTrailing}
+            {statusText ? (
+              <span
+                className={`text-xs tabular-nums ${
+                  saveStatus === "error" ? "text-red-600" : "text-gray-400"
+                }`}
+              >
+                {statusText}
+              </span>
+            ) : null}
+          </div>
         </div>
         {toolbar}
       </header>
